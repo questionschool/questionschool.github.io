@@ -47,8 +47,16 @@
   .stat-chip {
     background: var(--card); border: 1px solid var(--line);
     border-radius: 10px; padding: 8px 14px; font-size: 13px; color: var(--ink-soft);
+    font-family: inherit; cursor: pointer; transition: all 0.15s;
   }
   .stat-chip b { color: var(--ink); font-weight: 700; margin-right: 2px; }
+  .stat-chip:hover { border-color: var(--accent); }
+  .stat-chip.on { background: var(--ink); border-color: var(--ink); color: #fff; }
+  .stat-chip.on b { color: #fff; }
+  .st-select {
+    border: none; -webkit-appearance: none; appearance: none; outline: none;
+    font-family: inherit; cursor: pointer;
+  }
 
   .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 10px; }
   .search {
@@ -410,7 +418,7 @@ store.appliedRestores = store.appliedRestores || [];
   }
   if (touched) storage.save(store);
 }
-let state = { q: '', ai: '전체', sort: 'updated', view: 'gallery', unlockedApps: null };
+let state = { q: '', ai: '전체', sort: 'updated', view: 'gallery', unlockedApps: null, status: null };
 
 function allApps() {
   const merged = [...BASE_APPS, ...(state.unlockedApps || []), ...store.discovered, ...store.added]
@@ -435,6 +443,7 @@ function filteredApps() {
   const hiddenMode = state.ai === '__hidden__';
   return allApps().filter(a =>
     (hiddenMode ? !!a.hidden : (!a.hidden && (state.ai==='전체' || a.ai===state.ai))) &&
+    (state.view !== 'gallery' || !state.status || a.status === state.status) &&
     (!state.q || (a.name + ' ' + (a.desc||'')).toLowerCase().includes(state.q.toLowerCase())));
 }
 
@@ -464,10 +473,21 @@ function render() {
   // 통계 (상태별)
   const byStatus = {};
   visible.forEach(a => byStatus[a.status] = (byStatus[a.status]||0)+1);
-  $('stats').innerHTML = `<span class="stat-chip"><b>${visible.length}</b>전체</span>` +
+  $('stats').innerHTML = `<button class="stat-chip ${!state.status?'on':''}" data-stf=""><b>${visible.length}</b>전체</button>` +
     STATUS_ORDER.filter(s => byStatus[s]).map(s =>
-      `<span class="stat-chip">${STATUS[s].emoji} <b>${byStatus[s]}</b>${STATUS[s].label}</span>`).join('')
-    + (hiddenCount ? `<span class="stat-chip">🔒 <b>${hiddenCount}</b>비공개</span>` : '');
+      `<button class="stat-chip ${state.status===s?'on':''}" data-stf="${s}">${STATUS[s].emoji} <b>${byStatus[s]}</b>${STATUS[s].label}</button>`).join('')
+    + (hiddenCount ? `<button class="stat-chip ${state.ai==='__hidden__'?'on':''}" data-stf="__hidden__">🔒 <b>${hiddenCount}</b>비공개</button>` : '');
+  $('stats').querySelectorAll('[data-stf]').forEach(b => b.onclick = () => {
+    const v = b.dataset.stf;
+    if (v === '__hidden__') {
+      if (!state.unlockedApps && VAULT.count > 0) { openPwDialog(); return; }
+      state.ai = state.ai === '__hidden__' ? '전체' : '__hidden__';
+    } else {
+      state.status = (v && state.status !== v) ? v : null;
+      if (state.view === 'board' && state.status) state.view = 'gallery';
+    }
+    render();
+  });
 
   if (state.view === 'gallery') renderGallery();
   else renderBoard();
@@ -503,7 +523,9 @@ function renderGallery() {
         <h3>${esc(a.name)}</h3>
         <p class="desc">${esc(a.desc || '')}</p>
         <div class="meta">
-          <span class="st-badge" style="background:${st.bg};color:${st.fg}">${st.emoji} ${st.label}</span>
+          <select class="st-badge st-select" data-st="${esc(a.id)}" title="클릭해서 상태 변경" style="background:${st.bg};color:${st.fg}">
+            ${STATUS_ORDER.map(s => `<option value="${s}" ${s===a.status?'selected':''}>${STATUS[s].emoji} ${STATUS[s].label}</option>`).join('')}
+          </select>
           <span class="ai-badge" style="background:${color}">${esc(a.ai)}</span>
           ${dates ? `<span class="date">${dates}</span>` : ''}
         </div>
@@ -521,6 +543,7 @@ function renderGallery() {
 
   $('grid').querySelectorAll('[data-edit]').forEach(b => b.onclick = () => openDialog(b.dataset.edit));
   $('grid').querySelectorAll('[data-vis]').forEach(b => b.onclick = () => toggleVis(b.dataset.vis));
+  $('grid').querySelectorAll('[data-st]').forEach(sel => sel.onchange = () => setStatus(sel.dataset.st, sel.value));
 }
 
 // ─────────────────────────────────────────────
