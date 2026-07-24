@@ -120,9 +120,10 @@
   .actions .btn { flex: 1; justify-content: center; padding: 9px 10px; font-size: 12.5px; }
   .actions .btn.ghost { color: var(--ink-soft); }
   .actions .btn.ghost:hover { color: var(--accent); }
+  .card-foot { display: flex; justify-content: flex-end; gap: 14px; margin-top: 10px; }
   .edit-link {
     background: none; border: none; color: #b8b2a8; font-size: 11.5px;
-    font-family: inherit; cursor: pointer; margin-top: 10px; text-align: right; width: 100%;
+    font-family: inherit; cursor: pointer;
   }
   .edit-link:hover { color: var(--accent); }
 
@@ -274,6 +275,13 @@
           <option>기타</option>
         </select>
       </div>
+      <div class="field">
+        <label>공개 여부</label>
+        <select id="f_vis">
+          <option value="0">공개</option>
+          <option value="1">비공개</option>
+        </select>
+      </div>
     </div>
     <div class="field">
       <label>열기 링크 (URL)</label>
@@ -321,7 +329,7 @@ const BASE_APPS = [
     live:'https://questionschool.github.io/card/', repo:'https://github.com/questionschool/card', created:'2026-05-31', updated:'2026-05-31' },
   { id:'sangsang-leadership', emoji:'🌱', name:'상상 · 상승 리더십 스터디', desc:'상상 · 상승 리더십 스터디 자료 웹', ai:'Claude', status:'released',
     live:'https://questionschool.github.io/sangsang-leadership/', repo:'https://github.com/questionschool/sangsang-leadership', created:'2026-05-18', updated:'2026-05-18' },
-  { id:'edusquare-vote', emoji:'🗳️', name:'고승제 되기 선택 게임', desc:'에듀스퀘어 철학포럼 — 선택 게임', ai:'Claude', status:'released',
+  { id:'edusquare-vote', emoji:'🗳️', name:'고승제 되기 선택 게임', desc:'에듀스퀘어 철학포럼 — 선택 게임', ai:'Claude', status:'released', hidden:true,
     live:'https://questionschool.github.io/edusquare-vote/', repo:'https://github.com/questionschool/edusquare-vote', created:'2026-05-16', updated:'2026-05-17' },
   { id:'ThomasAI', emoji:'🤖', name:'Thomas AI', desc:'구글 AI 스튜디오와 연동한 프로젝트 (비공개 저장소)', ai:'Google AI Studio', status:'working',
     live:'', repo:'https://github.com/questionschool/ThomasAI', created:'', updated:'', private:true },
@@ -385,14 +393,17 @@ function coverStyle(app, i) {
 }
 
 function filteredApps() {
+  const hiddenMode = state.ai === '__hidden__';
   return allApps().filter(a =>
-    (state.ai==='전체' || a.ai===state.ai) &&
+    (hiddenMode ? !!a.hidden : (!a.hidden && (state.ai==='전체' || a.ai===state.ai))) &&
     (!state.q || (a.name + ' ' + (a.desc||'')).toLowerCase().includes(state.q.toLowerCase())));
 }
 
 function render() {
   const apps = allApps();
-  const ais = ['전체', ...new Set(apps.map(a => a.ai))];
+  const visible = apps.filter(a => !a.hidden);
+  const hiddenCount = apps.length - visible.length;
+  const ais = ['전체', ...new Set(visible.map(a => a.ai))];
 
   // 뷰 전환
   document.querySelectorAll('.tab').forEach(t => {
@@ -404,15 +415,17 @@ function render() {
 
   // 필터 칩
   $('filters').innerHTML = ais.map(a =>
-    `<button class="chip ${state.ai===a?'on':''}" data-ai="${esc(a)}">${esc(a)}${a==='전체' ? ` ${apps.length}` : ''}</button>`).join('');
+    `<button class="chip ${state.ai===a?'on':''}" data-ai="${esc(a)}">${esc(a)}${a==='전체' ? ` ${visible.length}` : ''}</button>`).join('')
+    + (hiddenCount ? `<button class="chip ${state.ai==='__hidden__'?'on':''}" data-ai="__hidden__">🔒 비공개 ${hiddenCount}</button>` : '');
   $('filters').querySelectorAll('.chip').forEach(c => c.onclick = () => { state.ai = c.dataset.ai; render(); });
 
   // 통계 (상태별)
   const byStatus = {};
-  apps.forEach(a => byStatus[a.status] = (byStatus[a.status]||0)+1);
-  $('stats').innerHTML = `<span class="stat-chip"><b>${apps.length}</b>전체</span>` +
+  visible.forEach(a => byStatus[a.status] = (byStatus[a.status]||0)+1);
+  $('stats').innerHTML = `<span class="stat-chip"><b>${visible.length}</b>전체</span>` +
     STATUS_ORDER.filter(s => byStatus[s]).map(s =>
-      `<span class="stat-chip">${STATUS[s].emoji} <b>${byStatus[s]}</b>${STATUS[s].label}</span>`).join('');
+      `<span class="stat-chip">${STATUS[s].emoji} <b>${byStatus[s]}</b>${STATUS[s].label}</span>`).join('')
+    + (hiddenCount ? `<span class="stat-chip">🔒 <b>${hiddenCount}</b>비공개</span>` : '');
 
   if (state.view === 'gallery') renderGallery();
   else renderBoard();
@@ -442,7 +455,7 @@ function renderGallery() {
       <div class="cover" style="${coverStyle(a,i)}">
         <span>${a.emoji || '🚀'}</span>
         ${a.isNew ? '<span class="badge-new">NEW 자동 발견</span>' : ''}
-        ${a.private ? '<span class="badge-private">🔒 비공개</span>' : ''}
+        ${a.hidden ? '<span class="badge-private">🙈 숨김</span>' : (a.private ? '<span class="badge-private">🔒 비공개</span>' : '')}
       </div>
       <div class="body">
         <h3>${esc(a.name)}</h3>
@@ -456,12 +469,24 @@ function renderGallery() {
           ${a.live ? `<a class="btn primary" href="${esc(a.live)}" target="_blank" rel="noopener">열기 ↗</a>` : ''}
           ${a.repo ? `<a class="btn ghost" href="${esc(a.repo)}" target="_blank" rel="noopener">GitHub</a>` : ''}
         </div>
-        <button class="edit-link" data-edit="${esc(a.id)}">수정</button>
+        <div class="card-foot">
+          <button class="edit-link" data-vis="${esc(a.id)}">${a.hidden ? '👁 공개로 전환' : '🔒 비공개로 전환'}</button>
+          <button class="edit-link" data-edit="${esc(a.id)}">수정</button>
+        </div>
       </div>
     </div>`;
   }).join('');
 
   $('grid').querySelectorAll('[data-edit]').forEach(b => b.onclick = () => openDialog(b.dataset.edit));
+  $('grid').querySelectorAll('[data-vis]').forEach(b => b.onclick = () => toggleVis(b.dataset.vis));
+}
+
+function toggleVis(id) {
+  const app = allApps().find(a => a.id === id);
+  if (!app) return;
+  store.overrides[id] = { ...(store.overrides[id]||{}), hidden: !app.hidden };
+  storage.save(store); render();
+  toast(app.hidden ? '👁 다시 공개로 전환했어요' : '🙈 갤러리에서 숨겼어요 (필터의 🔒 비공개에서 볼 수 있어요)');
 }
 
 function renderBoard() {
@@ -576,6 +601,7 @@ function openDialog(id) {
   $('f_live').value = app?.live || '';
   $('f_repo').value = app?.repo || '';
   $('f_status').value = app?.status || 'working';
+  $('f_vis').value = app?.hidden ? '1' : '0';
   $('f_ai').value = app?.ai && [...$('f_ai').options].some(o => o.value === app.ai) ? app.ai : (app ? '기타' : 'Claude');
   $('f_date').value = app?.created || '';
   $('dlg').showModal();
@@ -590,6 +616,7 @@ $('form').onsubmit = () => {
     repo: $('f_repo').value.trim(),
     ai: $('f_ai').value,
     status: $('f_status').value,
+    hidden: $('f_vis').value === '1',
     created: $('f_date').value,
   };
   if (!data.name) return;
