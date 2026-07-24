@@ -22,9 +22,9 @@
     color: var(--ink);
     min-height: 100vh;
   }
-  .wrap { max-width: 1080px; margin: 0 auto; padding: 40px 24px 80px; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 40px 24px 80px; }
 
-  header { margin-bottom: 28px; }
+  header { margin-bottom: 22px; }
   .eyebrow {
     display: inline-flex; align-items: center; gap: 6px;
     font-size: 12px; font-weight: 600; letter-spacing: 0.08em;
@@ -35,7 +35,15 @@
   h1 { font-size: 34px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 8px; }
   .subtitle { font-size: 15px; color: var(--ink-soft); line-height: 1.6; }
 
-  .stats { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0 24px; }
+  .tabs { display: flex; gap: 6px; margin: 22px 0 16px; background: #efece5; padding: 5px; border-radius: 14px; width: fit-content; }
+  .tab {
+    border: none; background: transparent; color: var(--ink-soft);
+    border-radius: 10px; padding: 9px 20px; font-size: 14px; font-weight: 700;
+    font-family: inherit; cursor: pointer; transition: all 0.15s;
+  }
+  .tab.on { background: #fff; color: var(--ink); box-shadow: 0 2px 8px rgba(45,42,38,0.08); }
+
+  .stats { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
   .stat-chip {
     background: var(--card); border: 1px solid var(--line);
     border-radius: 10px; padding: 8px 14px; font-size: 13px; color: var(--ink-soft);
@@ -68,7 +76,7 @@
   .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
   .btn.primary:hover { filter: brightness(1.05); color: #fff; }
 
-  .filters { display: flex; flex-wrap: wrap; gap: 8px; margin: 6px 0 26px; }
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; margin: 6px 0 24px; }
   .chip {
     border: 1px solid var(--line); background: var(--card); color: var(--ink-soft);
     border-radius: 999px; padding: 7px 14px; font-size: 13px; font-weight: 600;
@@ -76,6 +84,7 @@
   }
   .chip.on { background: var(--ink); border-color: var(--ink); color: #fff; }
 
+  /* ── 갤러리 카드 ── */
   .grid {
     display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 18px;
@@ -87,8 +96,8 @@
   }
   .card:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(45,42,38,0.09); }
   .cover {
-    height: 96px; display: flex; align-items: center; justify-content: center;
-    font-size: 40px; position: relative;
+    height: 92px; display: flex; align-items: center; justify-content: center;
+    font-size: 38px; position: relative;
   }
   .cover .badge-new {
     position: absolute; top: 10px; left: 10px;
@@ -104,9 +113,8 @@
   .card h3 { font-size: 17px; font-weight: 700; letter-spacing: -0.01em; margin-bottom: 5px; }
   .desc { font-size: 13.5px; color: var(--ink-soft); line-height: 1.55; flex: 1; margin-bottom: 12px; }
   .meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 14px; }
-  .ai-badge {
-    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px; color: #fff;
-  }
+  .ai-badge { font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px; color: #fff; }
+  .st-badge { font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px; }
   .date { font-size: 11.5px; color: #a09a90; }
   .actions { display: flex; gap: 8px; }
   .actions .btn { flex: 1; justify-content: center; padding: 9px 10px; font-size: 12.5px; }
@@ -120,6 +128,42 @@
 
   .empty { text-align: center; color: var(--ink-soft); padding: 60px 0; font-size: 14px; }
 
+  /* ── 칸반보드 ── */
+  .board { display: flex; gap: 12px; align-items: flex-start; overflow-x: auto; padding-bottom: 16px; }
+  .col {
+    flex: 1 0 208px; min-width: 208px; background: #f2efe8; border-radius: 14px;
+    padding: 12px 10px 14px; border: 2px solid transparent; transition: border-color 0.15s;
+  }
+  .col.dragover { border-color: var(--accent); background: var(--accent-soft); }
+  .col-head { display: flex; align-items: center; gap: 6px; padding: 2px 6px 10px; }
+  .col-head h4 { font-size: 13.5px; font-weight: 800; }
+  .col-count {
+    font-size: 11px; font-weight: 700; color: var(--ink-soft);
+    background: #fff; border-radius: 999px; padding: 1px 8px;
+  }
+  .bcard {
+    background: #fff; border: 1px solid var(--line); border-radius: 11px;
+    padding: 11px 12px; margin-bottom: 8px; cursor: grab; font-size: 13.5px;
+    transition: box-shadow 0.15s;
+  }
+  .bcard:hover { box-shadow: 0 4px 14px rgba(45,42,38,0.1); }
+  .bcard:active { cursor: grabbing; }
+  .bcard .b-title { font-weight: 700; display: flex; gap: 6px; align-items: flex-start; line-height: 1.35; }
+  .bcard .b-memo { font-size: 12px; color: var(--ink-soft); margin-top: 4px; line-height: 1.45; }
+  .bcard .b-foot { display: flex; align-items: center; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  .bcard .ai-badge { font-size: 10px; padding: 2px 8px; }
+  .bcard a { color: var(--ink-soft); text-decoration: none; font-size: 11.5px; }
+  .bcard a:hover { color: var(--accent); }
+  .b-edit { background: none; border: none; cursor: pointer; color: #c5bfb4; font-size: 12px; margin-left: auto; font-family: inherit; }
+  .b-edit:hover { color: var(--accent); }
+  .idea-input {
+    width: 100%; border: 1px dashed #cfc8bb; border-radius: 10px; background: #fffdf8;
+    padding: 9px 11px; font-size: 12.5px; font-family: inherit; outline: none; margin-bottom: 8px; color: var(--ink);
+  }
+  .idea-input:focus { border-color: var(--accent); }
+  .board-hint { font-size: 12px; color: #a09a90; margin: 4px 0 14px; }
+
+  /* ── 다이얼로그 ── */
   dialog {
     margin: auto; border: none; border-radius: 20px; padding: 0; max-width: 440px; width: calc(100vw - 40px);
     box-shadow: 0 24px 64px rgba(45,42,38,0.25);
@@ -156,14 +200,19 @@
   <header>
     <span class="eyebrow">✦ Vibe Coding Collection</span>
     <h1>지평의 AI 앱 갤러리</h1>
-    <p class="subtitle">클로드와 함께 바이브 코딩으로 만든 앱과 웹을 한 곳에 모았습니다.<br>
-    GitHub(questionschool)에 새 앱을 올리면 <b>「GitHub 동기화」</b> 버튼으로 자동으로 불러올 수 있어요.</p>
+    <p class="subtitle">클로드와 함께 바이브 코딩으로 만든 앱과 웹을 한 곳에서.<br>
+    갤러리에서 완성작을 보고, 칸반보드에서 아이디어부터 릴리즈까지 흐름을 관리해요.</p>
   </header>
+
+  <div class="tabs">
+    <button class="tab on" data-view="gallery">🖼 갤러리</button>
+    <button class="tab" data-view="board">📋 칸반보드</button>
+  </div>
 
   <div class="stats" id="stats"></div>
 
   <div class="toolbar">
-    <div class="search">🔍 <input id="q" type="search" placeholder="앱 이름·설명 검색"></div>
+    <div class="search"><span>🔍</span><input id="q" type="search" placeholder="앱 이름·설명 검색"></div>
     <select id="sort">
       <option value="updated">최신 업데이트순</option>
       <option value="created">만든 날짜순</option>
@@ -174,8 +223,15 @@
   </div>
   <div class="filters" id="filters"></div>
 
-  <div class="grid" id="grid"></div>
-  <div class="empty" id="empty" style="display:none">검색 결과가 없어요.</div>
+  <div id="galleryView">
+    <div class="grid" id="grid"></div>
+    <div class="empty" id="empty" style="display:none">검색 결과가 없어요.</div>
+  </div>
+
+  <div id="boardView" style="display:none">
+    <p class="board-hint">카드를 끌어서 다른 단계로 옮길 수 있어요. 아이디어 칸의 입력창에 적고 Enter를 누르면 인박스에 쌓입니다.</p>
+    <div class="board" id="board"></div>
+  </div>
 
   <footer id="foot"></footer>
 </div>
@@ -197,15 +253,17 @@
       <label>한 줄 설명</label>
       <input id="f_desc" placeholder="무엇을 하는 앱인가요?">
     </div>
-    <div class="field">
-      <label>열기 링크 (URL)</label>
-      <input id="f_live" type="url" placeholder="https://...">
-    </div>
-    <div class="field">
-      <label>GitHub / 소스 링크 (선택)</label>
-      <input id="f_repo" type="url" placeholder="https://github.com/...">
-    </div>
     <div class="field-row">
+      <div class="field">
+        <label>진행 상태</label>
+        <select id="f_status">
+          <option value="idea">💡 아이디어</option>
+          <option value="working">🔨 작업 중</option>
+          <option value="testing">🧪 테스트 중</option>
+          <option value="fix">🔧 수정 필요</option>
+          <option value="released">🚀 릴리즈됨</option>
+        </select>
+      </div>
       <div class="field">
         <label>만든 AI</label>
         <select id="f_ai">
@@ -216,10 +274,18 @@
           <option>기타</option>
         </select>
       </div>
-      <div class="field">
-        <label>만든 날짜</label>
-        <input id="f_date" type="date">
-      </div>
+    </div>
+    <div class="field">
+      <label>열기 링크 (URL)</label>
+      <input id="f_live" type="url" placeholder="https://...">
+    </div>
+    <div class="field">
+      <label>GitHub / 소스 링크 (선택)</label>
+      <input id="f_repo" type="url" placeholder="https://github.com/...">
+    </div>
+    <div class="field">
+      <label>만든 날짜</label>
+      <input id="f_date" type="date">
     </div>
     <div class="dlg-actions">
       <button type="button" class="btn danger" id="delBtn" style="display:none">삭제</button>
@@ -234,34 +300,45 @@
 <script>
 // ─────────────────────────────────────────────
 // 기본 데이터 (Claude가 관리 · 2026-07-24 기준)
+// status: idea | working | testing | fix | released
 // ─────────────────────────────────────────────
 const GITHUB_USER = 'questionschool';
 
 const BASE_APPS = [
-  { id:'blanktalk', emoji:'💬', name:'Blank Talk', desc:'TLP 교육디자인과 협업 프로젝트 — 빈칸 대화 호스트 화면', ai:'Claude',
+  { id:'blanktalk', emoji:'💬', name:'Blank Talk', desc:'TLP 교육디자인과 협업 프로젝트 — 빈칸 대화 호스트 화면', ai:'Claude', status:'released',
     live:'https://questionschool.github.io/blanktalk/', repo:'https://github.com/questionschool/blanktalk', created:'2026-06-02', updated:'2026-07-24' },
-  { id:'imago', emoji:'💞', name:'이마고 실습 · 18단계 여정', desc:'당신이 원하는 사랑 만들기 — 이마고 실습 Tool Box', ai:'Claude',
+  { id:'imago', emoji:'💞', name:'이마고 실습 · 18단계 여정', desc:'당신이 원하는 사랑 만들기 — 이마고 실습 Tool Box', ai:'Claude', status:'released',
     live:'https://questionschool.github.io/imago/', repo:'https://github.com/questionschool/imago', created:'2026-07-21', updated:'2026-07-21' },
-  { id:'modoobookclub', emoji:'📚', name:'모두의 새벽 + 낭만북클럽', desc:'새벽 독서 모임과 낭만북클럽을 위한 웹', ai:'Claude',
+  { id:'modoobookclub', emoji:'📚', name:'모두의 새벽 + 낭만북클럽', desc:'새벽 독서 모임과 낭만북클럽을 위한 웹', ai:'Claude', status:'released',
     live:'https://questionschool.github.io/modoobookclub/', repo:'https://github.com/questionschool/modoobookclub', created:'2026-05-22', updated:'2026-07-07' },
-  { id:'thomas', emoji:'🏫', name:'질문예술학교', desc:'질문예술학교 홈페이지', ai:'Claude',
+  { id:'thomas', emoji:'🏫', name:'질문예술학교', desc:'질문예술학교 홈페이지', ai:'Claude', status:'released',
     live:'https://questionschool.github.io/thomas/', repo:'https://github.com/questionschool/thomas', created:'2026-05-16', updated:'2026-06-27' },
-  { id:'write', emoji:'✍️', name:'함께 쓰는 질문 노트', desc:'질문예술학교 — 함께 쓰는 글쓰기 노트', ai:'Claude',
+  { id:'write', emoji:'✍️', name:'함께 쓰는 질문 노트', desc:'질문예술학교 — 함께 쓰는 글쓰기 노트', ai:'Claude', status:'released',
     live:'https://questionschool.github.io/write/', repo:'https://github.com/questionschool/write', created:'2026-05-30', updated:'2026-06-09' },
-  { id:'kanban', emoji:'🗂️', name:'토마스의 칸반', desc:'지평의 업무 흐름 관리를 위한 칸반 시스템', ai:'Claude',
+  { id:'kanban', emoji:'🗂️', name:'토마스의 칸반', desc:'지평의 업무 흐름 관리를 위한 칸반 시스템', ai:'Claude', status:'released',
     live:'https://questionschool.github.io/kanban/', repo:'https://github.com/questionschool/kanban', created:'2026-06-02', updated:'2026-06-02' },
-  { id:'card', emoji:'🃏', name:'질문예술학교 카드', desc:'대화를 돕는 카드 툴킷', ai:'Claude',
+  { id:'card', emoji:'🃏', name:'질문예술학교 카드', desc:'대화를 돕는 카드 툴킷', ai:'Claude', status:'released',
     live:'https://questionschool.github.io/card/', repo:'https://github.com/questionschool/card', created:'2026-05-31', updated:'2026-05-31' },
-  { id:'sangsang-leadership', emoji:'🌱', name:'상상 · 상승 리더십 스터디', desc:'상상 · 상승 리더십 스터디 자료 웹', ai:'Claude',
+  { id:'sangsang-leadership', emoji:'🌱', name:'상상 · 상승 리더십 스터디', desc:'상상 · 상승 리더십 스터디 자료 웹', ai:'Claude', status:'released',
     live:'https://questionschool.github.io/sangsang-leadership/', repo:'https://github.com/questionschool/sangsang-leadership', created:'2026-05-18', updated:'2026-05-18' },
-  { id:'edusquare-vote', emoji:'🗳️', name:'고승제 되기 선택 게임', desc:'에듀스퀘어 철학포럼 — 선택 게임', ai:'Claude',
+  { id:'edusquare-vote', emoji:'🗳️', name:'고승제 되기 선택 게임', desc:'에듀스퀘어 철학포럼 — 선택 게임', ai:'Claude', status:'released',
     live:'https://questionschool.github.io/edusquare-vote/', repo:'https://github.com/questionschool/edusquare-vote', created:'2026-05-16', updated:'2026-05-17' },
-  { id:'ThomasAI', emoji:'🤖', name:'Thomas AI', desc:'구글 AI 스튜디오와 연동한 프로젝트 (비공개 저장소)', ai:'Google AI Studio',
+  { id:'ThomasAI', emoji:'🤖', name:'Thomas AI', desc:'구글 AI 스튜디오와 연동한 프로젝트 (비공개 저장소)', ai:'Google AI Studio', status:'working',
     live:'', repo:'https://github.com/questionschool/ThomasAI', created:'', updated:'', private:true },
+  { id:'playg-verbcard', emoji:'🎴', name:'PlayG: 동사카드', desc:'동사카드 앱 — 디자인 작업 진행 중 (아직 GitHub 미등록)', ai:'Claude', status:'working',
+    live:'', repo:'', created:'2026-07-23', updated:'2026-07-23' },
 ];
 
 const AI_COLORS = { 'Claude':'#d97757', 'ChatGPT':'#10a37f', 'Gemini':'#886FBF', 'Google AI Studio':'#4285f4', '기타':'#64748b' };
 const COVER_HUES = [16, 32, 150, 200, 260, 330, 45, 180, 300, 90];
+const STATUS = {
+  idea:     { label:'아이디어',  emoji:'💡', fg:'#8a6d1a', bg:'#fdf5d8' },
+  working:  { label:'작업 중',   emoji:'🔨', fg:'#1d5c8f', bg:'#e3f0fb' },
+  testing:  { label:'테스트 중', emoji:'🧪', fg:'#6b3fa0', bg:'#f1e8fb' },
+  fix:      { label:'수정 필요', emoji:'🔧', fg:'#a03e2e', bg:'#fde8e3' },
+  released: { label:'릴리즈됨',  emoji:'🚀', fg:'#1e6f4a', bg:'#e2f5ea' },
+};
+const STATUS_ORDER = ['idea','working','testing','fix','released'];
 
 // ─────────────────────────────────────────────
 // 저장소 (직접 추가/수정분)
@@ -284,12 +361,14 @@ const storage = (() => {
 /*__END_STORAGE__*/
 
 let store = storage.load() || { added: [], removed: [], overrides: {}, discovered: [] };
-let state = { q: '', ai: '전체', sort: 'updated' };
+store.added = store.added || []; store.removed = store.removed || [];
+store.overrides = store.overrides || {}; store.discovered = store.discovered || [];
+let state = { q: '', ai: '전체', sort: 'updated', view: 'gallery' };
 
 function allApps() {
   const merged = [...BASE_APPS, ...store.discovered, ...store.added]
     .filter(a => !store.removed.includes(a.id))
-    .map(a => ({ ...a, ...(store.overrides[a.id] || {}) }));
+    .map(a => ({ status:'released', ...a, ...(store.overrides[a.id] || {}) }));
   const seen = new Set();
   return merged.filter(a => seen.has(a.id) ? false : (seen.add(a.id), true));
 }
@@ -298,32 +377,55 @@ function allApps() {
 // 렌더링
 // ─────────────────────────────────────────────
 const $ = id => document.getElementById(id);
+function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 function coverStyle(app, i) {
   const hue = COVER_HUES[i % COVER_HUES.length];
   return `background: linear-gradient(135deg, hsl(${hue},48%,92%), hsl(${(hue+40)%360},42%,86%))`;
 }
 
+function filteredApps() {
+  return allApps().filter(a =>
+    (state.ai==='전체' || a.ai===state.ai) &&
+    (!state.q || (a.name + ' ' + (a.desc||'')).toLowerCase().includes(state.q.toLowerCase())));
+}
+
 function render() {
   const apps = allApps();
   const ais = ['전체', ...new Set(apps.map(a => a.ai))];
 
+  // 뷰 전환
+  document.querySelectorAll('.tab').forEach(t => {
+    t.classList.toggle('on', t.dataset.view === state.view);
+    t.onclick = () => { state.view = t.dataset.view; render(); };
+  });
+  $('galleryView').style.display = state.view==='gallery' ? '' : 'none';
+  $('boardView').style.display = state.view==='board' ? '' : 'none';
+
   // 필터 칩
   $('filters').innerHTML = ais.map(a =>
-    `<button class="chip ${state.ai===a?'on':''}" data-ai="${a}">${a}${a==='전체' ? ` ${apps.length}` : ''}</button>`).join('');
+    `<button class="chip ${state.ai===a?'on':''}" data-ai="${esc(a)}">${esc(a)}${a==='전체' ? ` ${apps.length}` : ''}</button>`).join('');
   $('filters').querySelectorAll('.chip').forEach(c => c.onclick = () => { state.ai = c.dataset.ai; render(); });
 
-  // 통계
-  const byAi = {};
-  apps.forEach(a => byAi[a.ai] = (byAi[a.ai]||0)+1);
-  $('stats').innerHTML = `<span class="stat-chip"><b>${apps.length}</b>개의 앱</span>` +
-    Object.entries(byAi).map(([k,v]) => `<span class="stat-chip"><b>${v}</b>${k}</span>`).join('');
+  // 통계 (상태별)
+  const byStatus = {};
+  apps.forEach(a => byStatus[a.status] = (byStatus[a.status]||0)+1);
+  $('stats').innerHTML = `<span class="stat-chip"><b>${apps.length}</b>전체</span>` +
+    STATUS_ORDER.filter(s => byStatus[s]).map(s =>
+      `<span class="stat-chip">${STATUS[s].emoji} <b>${byStatus[s]}</b>${STATUS[s].label}</span>`).join('');
 
-  // 목록
-  let list = apps.filter(a =>
-    (state.ai==='전체' || a.ai===state.ai) &&
-    (!state.q || (a.name + ' ' + (a.desc||'')).toLowerCase().includes(state.q.toLowerCase())));
+  if (state.view === 'gallery') renderGallery();
+  else renderBoard();
 
+  $('foot').innerHTML =
+    (storage.persistent
+      ? '직접 추가·수정·이동한 내용은 이 브라우저에 자동 저장됩니다.'
+      : '이 화면에서 바꾼 내용은 창을 닫으면 사라져요. 영구 반영은 Claude에게 "갤러리에 반영해줘"라고 요청하세요.')
+    + '<br>Made with Claude · ' + GITHUB_USER;
+}
+
+function renderGallery() {
+  let list = filteredApps();
   list.sort((x,y) => {
     if (state.sort==='name') return x.name.localeCompare(y.name, 'ko');
     const k = state.sort;
@@ -334,6 +436,7 @@ function render() {
   $('grid').innerHTML = list.map((a) => {
     const i = Math.abs([...a.id].reduce((s,c)=>s+c.charCodeAt(0),0));
     const color = AI_COLORS[a.ai] || AI_COLORS['기타'];
+    const st = STATUS[a.status] || STATUS.released;
     const dates = [a.created && '만든 날 ' + a.created, a.updated && a.updated !== a.created && '업데이트 ' + a.updated].filter(Boolean).join(' · ');
     return `<div class="card">
       <div class="cover" style="${coverStyle(a,i)}">
@@ -345,6 +448,7 @@ function render() {
         <h3>${esc(a.name)}</h3>
         <p class="desc">${esc(a.desc || '')}</p>
         <div class="meta">
+          <span class="st-badge" style="background:${st.bg};color:${st.fg}">${st.emoji} ${st.label}</span>
           <span class="ai-badge" style="background:${color}">${esc(a.ai)}</span>
           ${dates ? `<span class="date">${dates}</span>` : ''}
         </div>
@@ -358,15 +462,61 @@ function render() {
   }).join('');
 
   $('grid').querySelectorAll('[data-edit]').forEach(b => b.onclick = () => openDialog(b.dataset.edit));
-
-  $('foot').innerHTML =
-    (storage.persistent
-      ? '직접 추가·수정한 내용은 이 브라우저에 자동 저장됩니다.'
-      : '이 화면에서 직접 추가한 내용은 창을 닫으면 사라져요. 영구 반영은 Claude에게 "갤러리에 ○○ 추가해줘"라고 요청하세요.')
-    + '<br>Made with Claude · ' + GITHUB_USER;
 }
 
-function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function renderBoard() {
+  const list = filteredApps();
+  $('board').innerHTML = STATUS_ORDER.map(s => {
+    const st = STATUS[s];
+    const cards = list.filter(a => a.status === s);
+    return `<div class="col" data-col="${s}">
+      <div class="col-head"><h4>${st.emoji} ${st.label}</h4><span class="col-count">${cards.length}</span></div>
+      ${s==='idea' ? `<input class="idea-input" id="ideaInput" placeholder="＋ 아이디어 적고 Enter">` : ''}
+      ${cards.map(a => `
+        <div class="bcard" draggable="true" data-id="${esc(a.id)}">
+          <div class="b-title"><span>${a.emoji || '💡'}</span><span>${esc(a.name)}</span></div>
+          ${a.desc ? `<div class="b-memo">${esc(a.desc)}</div>` : ''}
+          <div class="b-foot">
+            <span class="ai-badge" style="background:${AI_COLORS[a.ai] || AI_COLORS['기타']}">${esc(a.ai)}</span>
+            ${a.live ? `<a href="${esc(a.live)}" target="_blank" rel="noopener">열기↗</a>` : ''}
+            <button class="b-edit" data-edit="${esc(a.id)}">✎</button>
+          </div>
+        </div>`).join('')}
+    </div>`;
+  }).join('');
+
+  // 드래그 앤 드롭
+  $('board').querySelectorAll('.bcard').forEach(c => {
+    c.addEventListener('dragstart', e => e.dataTransfer.setData('text/plain', c.dataset.id));
+  });
+  $('board').querySelectorAll('.col').forEach(col => {
+    col.addEventListener('dragover', e => { e.preventDefault(); col.classList.add('dragover'); });
+    col.addEventListener('dragleave', () => col.classList.remove('dragover'));
+    col.addEventListener('drop', e => {
+      e.preventDefault(); col.classList.remove('dragover');
+      const id = e.dataTransfer.getData('text/plain');
+      if (!id) return;
+      setStatus(id, col.dataset.col);
+    });
+  });
+  $('board').querySelectorAll('[data-edit]').forEach(b => b.onclick = () => openDialog(b.dataset.edit));
+
+  const ideaInput = $('ideaInput');
+  if (ideaInput) ideaInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && ideaInput.value.trim()) {
+      store.added.push({ id: 'custom-' + Math.random().toString(36).slice(2,8),
+        emoji:'💡', name: ideaInput.value.trim(), desc:'', ai:'Claude', status:'idea', live:'', repo:'' });
+      storage.save(store); render();
+      toast('아이디어를 인박스에 담았어요 💡');
+    }
+  });
+}
+
+function setStatus(id, status) {
+  store.overrides[id] = { ...(store.overrides[id]||{}), status, isNew: false };
+  storage.save(store); render();
+  toast(`${STATUS[status].emoji} ${STATUS[status].label}(으)로 이동했어요`);
+}
 
 // ─────────────────────────────────────────────
 // GitHub 자동 동기화
@@ -382,9 +532,10 @@ async function syncGithub() {
 
     for (const r of repos) {
       if (r.fork) continue;
+      if (r.name === GITHUB_USER + '.github.io') continue; // 갤러리 자신은 제외
       if (!known.has(r.name)) {
         store.discovered.push({
-          id: r.name, emoji: '✨', name: r.name, isNew: true,
+          id: r.name, emoji: '✨', name: r.name, isNew: true, status: 'released',
           desc: r.description || 'GitHub에서 자동으로 발견된 새 앱',
           ai: 'Claude',
           live: r.has_pages ? `https://${GITHUB_USER}.github.io/${r.name}/` : (r.homepage || ''),
@@ -393,8 +544,8 @@ async function syncGithub() {
         });
         added++;
       } else {
-        const app = allApps().find(a => a.id === r.name);
         const pushed = (r.pushed_at||'').slice(0,10);
+        const app = allApps().find(a => a.id === r.name);
         if (app && pushed && app.updated !== pushed) {
           store.overrides[r.name] = { ...(store.overrides[r.name]||{}), updated: pushed };
           updated++;
@@ -424,12 +575,13 @@ function openDialog(id) {
   $('f_desc').value = app?.desc || '';
   $('f_live').value = app?.live || '';
   $('f_repo').value = app?.repo || '';
+  $('f_status').value = app?.status || 'working';
   $('f_ai').value = app?.ai && [...$('f_ai').options].some(o => o.value === app.ai) ? app.ai : (app ? '기타' : 'Claude');
   $('f_date').value = app?.created || '';
   $('dlg').showModal();
 }
 
-$('form').onsubmit = (e) => {
+$('form').onsubmit = () => {
   const data = {
     emoji: $('f_emoji').value.trim() || '🚀',
     name: $('f_name').value.trim(),
@@ -437,6 +589,7 @@ $('form').onsubmit = (e) => {
     live: $('f_live').value.trim(),
     repo: $('f_repo').value.trim(),
     ai: $('f_ai').value,
+    status: $('f_status').value,
     created: $('f_date').value,
   };
   if (!data.name) return;
@@ -447,7 +600,7 @@ $('form').onsubmit = (e) => {
   }
   storage.save(store);
   render();
-  toast(storage.persistent ? '저장했어요 ✓' : '추가했어요 (창을 닫기 전까지 유지돼요)');
+  toast(storage.persistent ? '저장했어요 ✓' : '반영했어요 (창을 닫기 전까지 유지돼요)');
 };
 
 $('delBtn').onclick = () => {
