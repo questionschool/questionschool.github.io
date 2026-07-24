@@ -328,6 +328,8 @@
 const GITHUB_USER = 'questionschool';
 
 const BASE_APPS = [
+  { id:'app-gallery', emoji:'✦', name:'지평의 AI 앱 갤러리', desc:'바이브 코딩으로 만든 모든 앱을 한 곳에서 — 지금 보고 있는 이 웹', ai:'Claude', status:'released',
+    live:'https://questionschool.github.io/', repo:'https://github.com/questionschool/questionschool.github.io', created:'2026-07-24', updated:'2026-07-24' },
   { id:'blanktalk', emoji:'💬', name:'Blank Talk', desc:'TLP 교육디자인과 협업 프로젝트 — 빈칸 대화 호스트 화면', ai:'Claude', status:'released',
     live:'https://questionschool.github.io/blanktalk/', repo:'https://github.com/questionschool/blanktalk', created:'2026-06-02', updated:'2026-07-24' },
   { id:'blanktalk-note', emoji:'📝', name:'블랭크톡 노트', desc:'Blank Talk 노트 버전 — 작업 중', ai:'Claude', status:'working',
@@ -353,7 +355,7 @@ const BASE_APPS = [
 ];
 
 // 비공개 앱 금고 — 비밀번호(PBKDF2 + AES-GCM)로 암호화되어 있어요. Claude가 관리합니다.
-const VAULT = { iter: 310000, count: 1, salt: '0b5HzWcKseLrAeB7sim7GA==', iv: '7cGrOGDrZN41XJV6', data: 'RiestC7pPFegvHL9TrUs40OjDU8mouMbIGFSKuO2p4KMrdOXBfBvirtNqKwxO8cV2abd382iniFQrTOVtNzDsrDQl5zIVr/dvwrftDySvP93E8NXmvyc/EXbHrUCtEHl8aLi7+L6ts77I1qcP5yf8selQzgzMPokd8B8sSd6/SlO3VlAokuyJCgPLL/l8r5vJrnZuvwAS97YGCHcdIcJIqWxstAd1A0Zd0d7XCzu5c/J6umsNPOaLqNgA3euhVht5GXCR3raCxY7nCRRG+eZfhO0DZb/+AKNWgjmDTqR3rqxxz9IBujzez95uJ+G8XDz+TBQuNed7M3vlgthmFzyoR5K4ub1A3z0Kx3pY14BLiMvjK/KpmKpZVA4brLcS/rXJApb+2cRQwtufgVhyAXuNpEdHMRnRhGVShsu/E5GLPI1zSUW62N+kCbh2F56+K9HrcUUc8tCIOerRMCILf4QY9+WeSmxFp7jjaTpD41BNjUazw==' };
+const VAULT = { iter: 310000, count: 1, salt: 'NIorhWZcoHNiliSMGyYxxQ==', iv: 'T1ANUxbUjF3B5OTi', data: 'iWXDzsP7cKvg624IgyAh4bA66kgAm38ytM72vxht4rULTUIdUkWfbISxj0SZgWLo9lXpaoE5prhSM4L2/CYLAm7qCDJFlh7Yhq+LVSJK8Xs9TJWtq5yKZc/saDGi7tEi8Ud5CIHzuVKAxzMiBR3WjuvQ64Htar6pByvKKvWzdEoDu3aC9WWaSBNNe5hPZi3i2LJa8Rrq2jJWy83ieDpXVIhRNfE4G/y7DC5ilw72q4AXDFF7JOnW4KORxErTIOzgICfDhq6IV2+gk73fiFaGkF41RI57yG53gXHwphXcNF9aiU1x6H1wNh0z42taTPxxmSOIxehdPjFLTgpcAfzlQ+sFjmw1qjifAeOoe8gOmQLnNqUp9sRQRqwzOX+jCvRNofu29pQ8GzYtsMVAEnm1kxWmvuN6nOwYxd5bOp97gRK2rNynopqz5ass4nG7dYItWJl1nj+bpWKd7f1YfkkmpAzN6MPo2t6RBOAPSv28ThulmQ==' };
 
 const AI_COLORS = { 'Claude':'#d97757', 'ChatGPT':'#10a37f', 'Gemini':'#886FBF', 'Google AI Studio':'#4285f4', '기타':'#64748b' };
 const COVER_HUES = [16, 32, 150, 200, 260, 330, 45, 180, 300, 90];
