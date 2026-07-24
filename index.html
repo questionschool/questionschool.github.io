@@ -57,6 +57,14 @@
     border: none; -webkit-appearance: none; appearance: none; outline: none;
     font-family: inherit; cursor: pointer;
   }
+  .en { font-weight: 600; color: #a8a195; font-size: 0.85em; }
+  .stat-chip.on .en { color: #d8d3c9; }
+  .fix-flag {
+    border: none; background: none; cursor: pointer; font-family: inherit;
+    font-size: 11.5px; opacity: 0.3; padding: 3px 7px; border-radius: 999px; transition: all 0.15s;
+  }
+  .fix-flag:hover { opacity: 0.7; }
+  .fix-flag.on { opacity: 1; background: #fde8e3; color: #a03e2e; font-weight: 700; }
 
   .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 10px; }
   .search {
@@ -266,11 +274,19 @@
       <div class="field">
         <label>진행 상태</label>
         <select id="f_status">
-          <option value="idea">💡 아이디어</option>
-          <option value="working">🔨 작업 중</option>
-          <option value="testing">🧪 테스트 중</option>
-          <option value="fix">🔧 수정 필요</option>
-          <option value="released">🚀 릴리즈됨</option>
+          <option value="idea">💡 아이디어 · Backlog</option>
+          <option value="todo">📋 작업 대기 · To Do</option>
+          <option value="working">🔨 만드는 중 · In Progress</option>
+          <option value="polishing">🧪 다듬는 중 · Review/Test</option>
+          <option value="live">🚀 운영 중 · Live</option>
+          <option value="archived">📦 보관 · Archived</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>수정 필요</label>
+        <select id="f_fix">
+          <option value="0">아니오</option>
+          <option value="1">🔧 예</option>
         </select>
       </div>
       <div class="field">
@@ -336,25 +352,25 @@
 const GITHUB_USER = 'questionschool';
 
 const BASE_APPS = [
-  { id:'app-gallery', emoji:'✦', name:'지평의 AI 앱 갤러리', desc:'바이브 코딩으로 만든 모든 앱을 한 곳에서 — 지금 보고 있는 이 웹', ai:'Claude', status:'released',
+  { id:'app-gallery', emoji:'✦', name:'지평의 AI 앱 갤러리', desc:'바이브 코딩으로 만든 모든 앱을 한 곳에서 — 지금 보고 있는 이 웹', ai:'Claude', status:'live',
     live:'https://questionschool.github.io/', repo:'https://github.com/questionschool/questionschool.github.io', created:'2026-07-24', updated:'2026-07-24' },
-  { id:'blanktalk', emoji:'💬', name:'Blank Talk', desc:'TLP 교육디자인과 협업 프로젝트 — 빈칸 대화 호스트 화면', ai:'Claude', status:'released',
+  { id:'blanktalk', emoji:'💬', name:'Blank Talk', desc:'TLP 교육디자인과 협업 프로젝트 — 빈칸 대화 호스트 화면', ai:'Claude', status:'live',
     live:'https://questionschool.github.io/blanktalk/', repo:'https://github.com/questionschool/blanktalk', created:'2026-06-02', updated:'2026-07-24' },
   { id:'blanktalk-note', emoji:'📝', name:'블랭크톡 노트', desc:'Blank Talk 노트 버전 — 작업 중', ai:'Claude', status:'working',
     live:'', repo:'https://github.com/questionschool/blanktalk', created:'2026-07-24', updated:'2026-07-24' },
-  { id:'imago', emoji:'💞', name:'이마고 실습 · 18단계 여정', desc:'당신이 원하는 사랑 만들기 — 이마고 실습 Tool Box', ai:'Claude', status:'released',
+  { id:'imago', emoji:'💞', name:'이마고 실습 · 18단계 여정', desc:'당신이 원하는 사랑 만들기 — 이마고 실습 Tool Box', ai:'Claude', status:'live',
     live:'https://questionschool.github.io/imago/', repo:'https://github.com/questionschool/imago', created:'2026-07-21', updated:'2026-07-21' },
-  { id:'modoobookclub', emoji:'📚', name:'모두의 새벽 + 낭만북클럽', desc:'새벽 독서 모임과 낭만북클럽을 위한 웹', ai:'Claude', status:'released',
+  { id:'modoobookclub', emoji:'📚', name:'모두의 새벽 + 낭만북클럽', desc:'새벽 독서 모임과 낭만북클럽을 위한 웹', ai:'Claude', status:'live',
     live:'https://questionschool.github.io/modoobookclub/', repo:'https://github.com/questionschool/modoobookclub', created:'2026-05-22', updated:'2026-07-07' },
-  { id:'thomas', emoji:'🏫', name:'질문예술학교', desc:'질문예술학교 홈페이지', ai:'Claude', status:'released',
+  { id:'thomas', emoji:'🏫', name:'질문예술학교', desc:'질문예술학교 홈페이지', ai:'Claude', status:'live',
     live:'https://questionschool.github.io/thomas/', repo:'https://github.com/questionschool/thomas', created:'2026-05-16', updated:'2026-06-27' },
-  { id:'write', emoji:'✍️', name:'함께 쓰는 질문 노트', desc:'질문예술학교 — 함께 쓰는 글쓰기 노트', ai:'Claude', status:'released',
+  { id:'write', emoji:'✍️', name:'함께 쓰는 질문 노트', desc:'질문예술학교 — 함께 쓰는 글쓰기 노트', ai:'Claude', status:'live',
     live:'https://questionschool.github.io/write/', repo:'https://github.com/questionschool/write', created:'2026-05-30', updated:'2026-06-09' },
-  { id:'kanban', emoji:'🗂️', name:'토마스의 칸반', desc:'지평의 업무 흐름 관리를 위한 칸반 시스템', ai:'Claude', status:'released',
+  { id:'kanban', emoji:'🗂️', name:'토마스의 칸반', desc:'지평의 업무 흐름 관리를 위한 칸반 시스템', ai:'Claude', status:'live',
     live:'https://questionschool.github.io/kanban/', repo:'https://github.com/questionschool/kanban', created:'2026-06-02', updated:'2026-06-02' },
-  { id:'card', emoji:'🃏', name:'질문예술학교 카드', desc:'대화를 돕는 카드 툴킷', ai:'Claude', status:'released',
+  { id:'card', emoji:'🃏', name:'질문예술학교 카드', desc:'대화를 돕는 카드 툴킷', ai:'Claude', status:'live',
     live:'https://questionschool.github.io/card/', repo:'https://github.com/questionschool/card', created:'2026-05-31', updated:'2026-05-31' },
-  { id:'sangsang-leadership', emoji:'🌱', name:'상상 · 상승 리더십 스터디', desc:'상상 · 상승 리더십 스터디 자료 웹', ai:'Claude', status:'released',
+  { id:'sangsang-leadership', emoji:'🌱', name:'상상 · 상승 리더십 스터디', desc:'상상 · 상승 리더십 스터디 자료 웹', ai:'Claude', status:'live',
     live:'https://questionschool.github.io/sangsang-leadership/', repo:'https://github.com/questionschool/sangsang-leadership', created:'2026-05-18', updated:'2026-05-18' },
   { id:'ThomasAI', emoji:'🤖', name:'Thomas AI', desc:'구글 AI 스튜디오와 연동한 프로젝트 (비공개 저장소)', ai:'Google AI Studio', status:'working',
     live:'', repo:'https://github.com/questionschool/ThomasAI', created:'', updated:'', private:true },
@@ -368,13 +384,15 @@ const VAULT = { iter: 310000, count: 1, salt: 'NIorhWZcoHNiliSMGyYxxQ==', iv: 'T
 const AI_COLORS = { 'Claude':'#d97757', 'ChatGPT':'#10a37f', 'Gemini':'#886FBF', 'Google AI Studio':'#4285f4', '기타':'#64748b' };
 const COVER_HUES = [16, 32, 150, 200, 260, 330, 45, 180, 300, 90];
 const STATUS = {
-  idea:     { label:'아이디어',  emoji:'💡', fg:'#8a6d1a', bg:'#fdf5d8' },
-  working:  { label:'작업 중',   emoji:'🔨', fg:'#1d5c8f', bg:'#e3f0fb' },
-  testing:  { label:'테스트 중', emoji:'🧪', fg:'#6b3fa0', bg:'#f1e8fb' },
-  fix:      { label:'수정 필요', emoji:'🔧', fg:'#a03e2e', bg:'#fde8e3' },
-  released: { label:'릴리즈됨',  emoji:'🚀', fg:'#1e6f4a', bg:'#e2f5ea' },
+  idea:      { label:'아이디어',  en:'Backlog',       emoji:'💡', fg:'#8a6d1a', bg:'#fdf5d8' },
+  todo:      { label:'작업 대기', en:'To Do',         emoji:'📋', fg:'#5b6470', bg:'#eef1f5' },
+  working:   { label:'만드는 중', en:'In Progress',   emoji:'🔨', fg:'#1d5c8f', bg:'#e3f0fb' },
+  polishing: { label:'다듬는 중', en:'Review · Test', emoji:'🧪', fg:'#6b3fa0', bg:'#f1e8fb' },
+  live:      { label:'운영 중',   en:'Live',          emoji:'🚀', fg:'#1e6f4a', bg:'#e2f5ea' },
+  archived:  { label:'보관',      en:'Archived',      emoji:'📦', fg:'#6b655c', bg:'#eceae4' },
 };
-const STATUS_ORDER = ['idea','working','testing','fix','released'];
+const STATUS_ORDER = ['idea','todo','working','polishing','live','archived'];
+const LEGACY_STATUS = { testing:'polishing', released:'live' }; // 이전 명칭 자동 변환
 
 // ─────────────────────────────────────────────
 // 저장소 (직접 추가/수정분)
@@ -418,12 +436,35 @@ store.appliedRestores = store.appliedRestores || [];
   }
   if (touched) storage.save(store);
 }
-let state = { q: '', ai: '전체', sort: 'updated', view: 'gallery', unlockedApps: null, status: null };
+
+// 이전 상태 체계(테스트 중/수정 필요/릴리즈됨) → 새 체계로 1회 이전
+{
+  const MIG_KEY = 'status-migration-v2';
+  if (!store.appliedRestores.includes(MIG_KEY)) {
+    const migrate = (o) => {
+      if (!o || !o.status) return;
+      if (o.status === 'fix') { o.status = 'live'; o.fix = true; }
+      else if (LEGACY_STATUS[o.status]) o.status = LEGACY_STATUS[o.status];
+    };
+    Object.values(store.overrides).forEach(migrate);
+    store.added.forEach(migrate);
+    store.discovered.forEach(migrate);
+    store.appliedRestores.push(MIG_KEY);
+    storage.save(store);
+  }
+}
+let state = { q: '', ai: '전체', sort: 'updated', view: 'gallery', unlockedApps: null, status: null, fixOnly: false };
 
 function allApps() {
   const merged = [...BASE_APPS, ...(state.unlockedApps || []), ...store.discovered, ...store.added]
     .filter(a => !store.removed.includes(a.id))
-    .map(a => ({ status:'released', ...a, ...(store.overrides[a.id] || {}) }));
+    .map(a => {
+      const m = { status:'live', ...a, ...(store.overrides[a.id] || {}) };
+      if (m.status === 'fix') { m.status = 'live'; m.fix = true; }
+      else if (LEGACY_STATUS[m.status]) m.status = LEGACY_STATUS[m.status];
+      if (!STATUS[m.status]) m.status = 'live';
+      return m;
+    });
   const seen = new Set();
   return merged.filter(a => seen.has(a.id) ? false : (seen.add(a.id), true));
 }
@@ -444,6 +485,7 @@ function filteredApps() {
   return allApps().filter(a =>
     (hiddenMode ? !!a.hidden : (!a.hidden && (state.ai==='전체' || a.ai===state.ai))) &&
     (state.view !== 'gallery' || !state.status || a.status === state.status) &&
+    (!state.fixOnly || a.fix) &&
     (!state.q || (a.name + ' ' + (a.desc||'')).toLowerCase().includes(state.q.toLowerCase())));
 }
 
@@ -473,17 +515,22 @@ function render() {
   // 통계 (상태별)
   const byStatus = {};
   visible.forEach(a => byStatus[a.status] = (byStatus[a.status]||0)+1);
-  $('stats').innerHTML = `<button class="stat-chip ${!state.status?'on':''}" data-stf=""><b>${visible.length}</b>전체</button>` +
+  const fixCount = visible.filter(a => a.fix).length;
+  $('stats').innerHTML = `<button class="stat-chip ${!state.status && !state.fixOnly?'on':''}" data-stf=""><b>${visible.length}</b>전체</button>` +
     STATUS_ORDER.filter(s => byStatus[s]).map(s =>
-      `<button class="stat-chip ${state.status===s?'on':''}" data-stf="${s}">${STATUS[s].emoji} <b>${byStatus[s]}</b>${STATUS[s].label}</button>`).join('')
+      `<button class="stat-chip ${state.status===s?'on':''}" data-stf="${s}">${STATUS[s].emoji} <b>${byStatus[s]}</b>${STATUS[s].label} <span class="en">${STATUS[s].en}</span></button>`).join('')
+    + (fixCount ? `<button class="stat-chip ${state.fixOnly?'on':''}" data-stf="__fix__">🔧 <b>${fixCount}</b>수정 필요 <span class="en">Needs Fix</span></button>` : '')
     + (hiddenCount ? `<button class="stat-chip ${state.ai==='__hidden__'?'on':''}" data-stf="__hidden__">🔒 <b>${hiddenCount}</b>비공개</button>` : '');
   $('stats').querySelectorAll('[data-stf]').forEach(b => b.onclick = () => {
     const v = b.dataset.stf;
     if (v === '__hidden__') {
       if (!state.unlockedApps && VAULT.count > 0) { openPwDialog(); return; }
       state.ai = state.ai === '__hidden__' ? '전체' : '__hidden__';
+    } else if (v === '__fix__') {
+      state.fixOnly = !state.fixOnly;
     } else {
       state.status = (v && state.status !== v) ? v : null;
+      if (!v) state.fixOnly = false;
       if (state.view === 'board' && state.status) state.view = 'gallery';
     }
     render();
@@ -524,8 +571,9 @@ function renderGallery() {
         <p class="desc">${esc(a.desc || '')}</p>
         <div class="meta">
           <select class="st-badge st-select" data-st="${esc(a.id)}" title="클릭해서 상태 변경" style="background:${st.bg};color:${st.fg}">
-            ${STATUS_ORDER.map(s => `<option value="${s}" ${s===a.status?'selected':''}>${STATUS[s].emoji} ${STATUS[s].label}</option>`).join('')}
+            ${STATUS_ORDER.map(s => `<option value="${s}" ${s===a.status?'selected':''}>${STATUS[s].emoji} ${STATUS[s].label} · ${STATUS[s].en}</option>`).join('')}
           </select>
+          <button class="fix-flag ${a.fix?'on':''}" data-fix="${esc(a.id)}" title="수정 필요 표시 켜기/끄기">🔧${a.fix ? ' 수정 필요' : ''}</button>
           <span class="ai-badge" style="background:${color}">${esc(a.ai)}</span>
           ${dates ? `<span class="date">${dates}</span>` : ''}
         </div>
@@ -544,6 +592,15 @@ function renderGallery() {
   $('grid').querySelectorAll('[data-edit]').forEach(b => b.onclick = () => openDialog(b.dataset.edit));
   $('grid').querySelectorAll('[data-vis]').forEach(b => b.onclick = () => toggleVis(b.dataset.vis));
   $('grid').querySelectorAll('[data-st]').forEach(sel => sel.onchange = () => setStatus(sel.dataset.st, sel.value));
+  $('grid').querySelectorAll('[data-fix]').forEach(b => b.onclick = () => toggleFix(b.dataset.fix));
+}
+
+function toggleFix(id) {
+  const app = allApps().find(a => a.id === id);
+  if (!app) return;
+  store.overrides[id] = { ...(store.overrides[id]||{}), fix: !app.fix };
+  storage.save(store); render();
+  toast(!app.fix ? '🔧 수정 필요 표시를 붙였어요' : '수정 필요 표시를 해제했어요');
 }
 
 // ─────────────────────────────────────────────
@@ -597,11 +654,11 @@ function renderBoard() {
     const st = STATUS[s];
     const cards = list.filter(a => a.status === s);
     return `<div class="col" data-col="${s}">
-      <div class="col-head"><h4>${st.emoji} ${st.label}</h4><span class="col-count">${cards.length}</span></div>
+      <div class="col-head"><h4>${st.emoji} ${st.label} <span class="en">${st.en}</span></h4><span class="col-count">${cards.length}</span></div>
       ${s==='idea' ? `<input class="idea-input" id="ideaInput" placeholder="＋ 아이디어 적고 Enter">` : ''}
       ${cards.map(a => `
         <div class="bcard" draggable="true" data-id="${esc(a.id)}">
-          <div class="b-title"><span>${a.emoji || '💡'}</span><span>${esc(a.name)}</span></div>
+          <div class="b-title"><span>${a.emoji || '💡'}</span><span>${esc(a.name)}${a.fix ? ' <span title="수정 필요">🔧</span>' : ''}</span></div>
           ${a.desc ? `<div class="b-memo">${esc(a.desc)}</div>` : ''}
           <div class="b-foot">
             <span class="ai-badge" style="background:${AI_COLORS[a.ai] || AI_COLORS['기타']}">${esc(a.ai)}</span>
@@ -662,7 +719,7 @@ async function syncGithub() {
       if (r.name === GITHUB_USER + '.github.io') continue; // 갤러리 자신은 제외
       if (!known.has(r.name)) {
         store.discovered.push({
-          id: r.name, emoji: '✨', name: r.name, isNew: true, status: 'released',
+          id: r.name, emoji: '✨', name: r.name, isNew: true, status: 'live',
           desc: r.description || 'GitHub에서 자동으로 발견된 새 앱',
           ai: 'Claude',
           live: r.has_pages ? `https://${GITHUB_USER}.github.io/${r.name}/` : (r.homepage || ''),
@@ -702,7 +759,8 @@ function openDialog(id) {
   $('f_desc').value = app?.desc || '';
   $('f_live').value = app?.live || '';
   $('f_repo').value = app?.repo || '';
-  $('f_status').value = app?.status || 'working';
+  $('f_status').value = app?.status && STATUS[app.status] ? app.status : 'working';
+  $('f_fix').value = app?.fix ? '1' : '0';
   $('f_vis').value = app?.hidden ? '1' : '0';
   $('f_ai').value = app?.ai && [...$('f_ai').options].some(o => o.value === app.ai) ? app.ai : (app ? '기타' : 'Claude');
   $('f_date').value = app?.created || '';
@@ -718,6 +776,7 @@ $('form').onsubmit = () => {
     repo: $('f_repo').value.trim(),
     ai: $('f_ai').value,
     status: $('f_status').value,
+    fix: $('f_fix').value === '1',
     hidden: $('f_vis').value === '1',
     created: $('f_date').value,
   };
