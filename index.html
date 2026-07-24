@@ -391,13 +391,17 @@ store.added = store.added || []; store.removed = store.removed || [];
 store.overrides = store.overrides || {}; store.discovered = store.discovered || [];
 
 // 실수로 지운 앱 복구 (한 번만 적용 — 이후 다시 삭제하는 건 자유)
-const RESTORES = [ { key: 'restore-blanktalk-2026-07-24', ids: ['blanktalk'] } ];
+const RESTORES = [
+  { key: 'restore-blanktalk-2026-07-24', ids: ['blanktalk'] },
+  { key: 'reset-blanktalk-card-2026-07-24', ids: ['blanktalk'], reset: true },
+];
 store.appliedRestores = store.appliedRestores || [];
 {
   let touched = false;
   for (const r of RESTORES) {
     if (!store.appliedRestores.includes(r.key)) {
       store.removed = store.removed.filter(id => !r.ids.includes(id));
+      if (r.reset) r.ids.forEach(id => delete store.overrides[id]);
       store.appliedRestores.push(r.key);
       touched = true;
     }
