@@ -65,6 +65,14 @@
   }
   .fix-flag:hover { opacity: 0.7; }
   .fix-flag.on { opacity: 1; background: #fde8e3; color: #a03e2e; font-weight: 700; }
+  .fix-item { display: flex; align-items: center; gap: 9px; padding: 8px 2px; border-bottom: 1px dashed var(--line); font-size: 14px; }
+  .fix-item input[type=checkbox] { accent-color: var(--accent); width: 16px; height: 16px; cursor: pointer; flex: none; }
+  .fix-item .fix-text { flex: 1; line-height: 1.4; }
+  .fix-item.done .fix-text { text-decoration: line-through; color: #b8b2a8; }
+  .fix-del { background: none; border: none; color: #c5bfb4; cursor: pointer; font-size: 13px; font-family: inherit; }
+  .fix-del:hover { color: #c0392b; }
+  .fix-empty { color: var(--ink-soft); font-size: 13px; padding: 6px 0 12px; }
+  #fixList { margin-bottom: 14px; max-height: 40vh; overflow-y: auto; }
 
   .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 10px; }
   .search {
@@ -283,13 +291,6 @@
         </select>
       </div>
       <div class="field">
-        <label>수정 필요</label>
-        <select id="f_fix">
-          <option value="0">아니오</option>
-          <option value="1">🔧 예</option>
-        </select>
-      </div>
-      <div class="field">
         <label>만든 AI</label>
         <select id="f_ai">
           <option>Claude</option>
@@ -325,6 +326,19 @@
       <button type="submit" class="btn primary" id="saveBtn">저장</button>
     </div>
   </form>
+</dialog>
+
+<dialog id="fixDlg">
+  <div class="dlg-body">
+    <h2 id="fixTitle">🔧 수정 메모</h2>
+    <div id="fixList"></div>
+    <div class="field">
+      <input id="fixInput" placeholder="＋ 고칠 내용을 적고 Enter">
+    </div>
+    <div class="dlg-actions">
+      <button type="button" class="btn" id="fixClose">닫기</button>
+    </div>
+  </div>
 </dialog>
 
 <dialog id="pwDlg">
@@ -573,7 +587,7 @@ function renderGallery() {
           <select class="st-badge st-select" data-st="${esc(a.id)}" title="클릭해서 상태 변경" style="background:${st.bg};color:${st.fg}">
             ${STATUS_ORDER.map(s => `<option value="${s}" ${s===a.status?'selected':''}>${STATUS[s].emoji} ${STATUS[s].label} · ${STATUS[s].en}</option>`).join('')}
           </select>
-          <button class="fix-flag ${a.fix?'on':''}" data-fix="${esc(a.id)}" title="수정 필요 표시 켜기/끄기">🔧${a.fix ? ' 수정 필요' : ''}</button>
+          <button class="fix-flag ${a.fix?'on':''}" data-fix="${esc(a.id)}" title="수정 메모 열기">🔧${(() => { const n = (a.fixItems||[]).filter(i=>!i.d).length; return n ? ' ' + n : (a.fix ? ' 수정 필요' : ''); })()}</button>
           <span class="ai-badge" style="background:${color}">${esc(a.ai)}</span>
           ${dates ? `<span class="date">${dates}</span>` : ''}
         </div>
@@ -592,15 +606,56 @@ function renderGallery() {
   $('grid').querySelectorAll('[data-edit]').forEach(b => b.onclick = () => openDialog(b.dataset.edit));
   $('grid').querySelectorAll('[data-vis]').forEach(b => b.onclick = () => toggleVis(b.dataset.vis));
   $('grid').querySelectorAll('[data-st]').forEach(sel => sel.onchange = () => setStatus(sel.dataset.st, sel.value));
-  $('grid').querySelectorAll('[data-fix]').forEach(b => b.onclick = () => toggleFix(b.dataset.fix));
+  $('grid').querySelectorAll('[data-fix]').forEach(b => b.onclick = () => openFixDialog(b.dataset.fix));
 }
 
-function toggleFix(id) {
+// ─────────────────────────────────────────────
+// 수정 메모 (체크리스트)
+// ─────────────────────────────────────────────
+let fixEditingId = null;
+
+function openFixDialog(id) {
   const app = allApps().find(a => a.id === id);
   if (!app) return;
-  store.overrides[id] = { ...(store.overrides[id]||{}), fix: !app.fix };
-  storage.save(store); render();
-  toast(!app.fix ? '🔧 수정 필요 표시를 붙였어요' : '수정 필요 표시를 해제했어요');
+  fixEditingId = id;
+  $('fixTitle').textContent = '🔧 수정 메모 — ' + app.name;
+  $('fixInput').value = '';
+  renderFixList();
+  $('fixDlg').showModal();
+}
+
+function getFixItems(id) {
+  const app = allApps().find(a => a.id === id);
+  return (app?.fixItems || []).map(i => ({ ...i }));
+}
+
+function saveFixItems(id, items) {
+  store.overrides[id] = { ...(store.overrides[id]||{}), fixItems: items, fix: items.some(i => !i.d) };
+  storage.save(store);
+  render();
+}
+
+function renderFixList() {
+  const items = getFixItems(fixEditingId);
+  $('fixList').innerHTML = items.length ? items.map((i, idx) => `
+    <div class="fix-item ${i.d?'done':''}">
+      <input type="checkbox" data-fixchk="${idx}" ${i.d?'checked':''}>
+      <span class="fix-text">${esc(i.t)}</span>
+      <button class="fix-del" data-fixdel="${idx}" title="삭제">✕</button>
+    </div>`).join('')
+    : '<p class="fix-empty">아직 메모가 없어요. 아래에 고칠 내용을 적고 Enter를 눌러보세요.</p>';
+  $('fixList').querySelectorAll('[data-fixchk]').forEach(c => c.onchange = () => {
+    const its = getFixItems(fixEditingId);
+    its[+c.dataset.fixchk].d = c.checked;
+    saveFixItems(fixEditingId, its);
+    renderFixList();
+  });
+  $('fixList').querySelectorAll('[data-fixdel]').forEach(b => b.onclick = () => {
+    const its = getFixItems(fixEditingId);
+    its.splice(+b.dataset.fixdel, 1);
+    saveFixItems(fixEditingId, its);
+    renderFixList();
+  });
 }
 
 // ─────────────────────────────────────────────
@@ -639,6 +694,18 @@ $('pwForm').onsubmit = async (e) => {
   }
 };
 $('pwCancel').onclick = () => $('pwDlg').close();
+
+$('fixInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && $('fixInput').value.trim()) {
+    e.preventDefault();
+    const its = getFixItems(fixEditingId);
+    its.push({ t: $('fixInput').value.trim(), d: false });
+    $('fixInput').value = '';
+    saveFixItems(fixEditingId, its);
+    renderFixList();
+  }
+});
+$('fixClose').onclick = () => $('fixDlg').close();
 
 function toggleVis(id) {
   const app = allApps().find(a => a.id === id);
@@ -760,7 +827,6 @@ function openDialog(id) {
   $('f_live').value = app?.live || '';
   $('f_repo').value = app?.repo || '';
   $('f_status').value = app?.status && STATUS[app.status] ? app.status : 'working';
-  $('f_fix').value = app?.fix ? '1' : '0';
   $('f_vis').value = app?.hidden ? '1' : '0';
   $('f_ai').value = app?.ai && [...$('f_ai').options].some(o => o.value === app.ai) ? app.ai : (app ? '기타' : 'Claude');
   $('f_date').value = app?.created || '';
@@ -776,7 +842,6 @@ $('form').onsubmit = () => {
     repo: $('f_repo').value.trim(),
     ai: $('f_ai').value,
     status: $('f_status').value,
-    fix: $('f_fix').value === '1',
     hidden: $('f_vis').value === '1',
     created: $('f_date').value,
   };
