@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>지평의 AI 앱 갤러리</title>
+<style>
+  :root {
+    --bg: #faf9f5;
+    --card: #ffffff;
+    --ink: #2d2a26;
+    --ink-soft: #6b655c;
+    --line: #e8e4dc;
+    --accent: #d97757;
+    --accent-soft: #fdf0eb;
+    --radius: 16px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", "Noto Sans KR", "Malgun Gothic", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  header { margin-bottom: 28px; }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 600; letter-spacing: 0.08em;
+    color: var(--accent); text-transform: uppercase;
+    background: var(--accent-soft); padding: 5px 12px; border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  h1 { font-size: 34px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 8px; }
+  .subtitle { font-size: 15px; color: var(--ink-soft); line-height: 1.6; }
+
+  .stats { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0 24px; }
+  .stat-chip {
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: 10px; padding: 8px 14px; font-size: 13px; color: var(--ink-soft);
+  }
+  .stat-chip b { color: var(--ink); font-weight: 700; margin-right: 2px; }
+
+  .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 10px; }
+  .search {
+    flex: 1 1 220px; display: flex; align-items: center; gap: 8px;
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: 12px; padding: 10px 14px;
+  }
+  .search input {
+    border: none; outline: none; background: transparent;
+    font-size: 14px; width: 100%; font-family: inherit; color: var(--ink);
+  }
+  select {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 10px 12px; font-size: 13px; font-family: inherit; color: var(--ink);
+    cursor: pointer; outline: none;
+  }
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    border: 1px solid var(--line); background: var(--card); color: var(--ink);
+    border-radius: 12px; padding: 10px 14px; font-size: 13px; font-weight: 600;
+    font-family: inherit; cursor: pointer; transition: all 0.15s;
+    text-decoration: none; white-space: nowrap;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn.primary:hover { filter: brightness(1.05); color: #fff; }
+
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; margin: 6px 0 26px; }
+  .chip {
+    border: 1px solid var(--line); background: var(--card); color: var(--ink-soft);
+    border-radius: 999px; padding: 7px 14px; font-size: 13px; font-weight: 600;
+    font-family: inherit; cursor: pointer; transition: all 0.15s;
+  }
+  .chip.on { background: var(--ink); border-color: var(--ink); color: #fff; }
+
+  .grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 18px;
+  }
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .card:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(45,42,38,0.09); }
+  .cover {
+    height: 96px; display: flex; align-items: center; justify-content: center;
+    font-size: 40px; position: relative;
+  }
+  .cover .badge-new {
+    position: absolute; top: 10px; left: 10px;
+    background: rgba(255,255,255,0.92); color: var(--accent);
+    font-size: 11px; font-weight: 800; padding: 3px 9px; border-radius: 999px;
+  }
+  .cover .badge-private {
+    position: absolute; top: 10px; right: 10px;
+    background: rgba(45,42,38,0.75); color: #fff;
+    font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 999px;
+  }
+  .body { padding: 16px 18px 18px; display: flex; flex-direction: column; flex: 1; }
+  .card h3 { font-size: 17px; font-weight: 700; letter-spacing: -0.01em; margin-bottom: 5px; }
+  .desc { font-size: 13.5px; color: var(--ink-soft); line-height: 1.55; flex: 1; margin-bottom: 12px; }
+  .meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 14px; }
+  .ai-badge {
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px; color: #fff;
+  }
+  .date { font-size: 11.5px; color: #a09a90; }
+  .actions { display: flex; gap: 8px; }
+  .actions .btn { flex: 1; justify-content: center; padding: 9px 10px; font-size: 12.5px; }
+  .actions .btn.ghost { color: var(--ink-soft); }
+  .actions .btn.ghost:hover { color: var(--accent); }
+  .edit-link {
+    background: none; border: none; color: #b8b2a8; font-size: 11.5px;
+    font-family: inherit; cursor: pointer; margin-top: 10px; text-align: right; width: 100%;
+  }
+  .edit-link:hover { color: var(--accent); }
+
+  .empty { text-align: center; color: var(--ink-soft); padding: 60px 0; font-size: 14px; }
+
+  dialog {
+    margin: auto; border: none; border-radius: 20px; padding: 0; max-width: 440px; width: calc(100vw - 40px);
+    box-shadow: 0 24px 64px rgba(45,42,38,0.25);
+  }
+  dialog::backdrop { background: rgba(45,42,38,0.35); }
+  .dlg-body { padding: 26px 26px 22px; }
+  dialog h2 { font-size: 19px; font-weight: 800; margin-bottom: 18px; }
+  .field { margin-bottom: 13px; }
+  .field label { display: block; font-size: 12px; font-weight: 700; color: var(--ink-soft); margin-bottom: 5px; }
+  .field input, .field select, .field textarea {
+    width: 100%; border: 1px solid var(--line); border-radius: 10px;
+    padding: 9px 12px; font-size: 14px; font-family: inherit; outline: none; background: #fff; color: var(--ink);
+  }
+  .field input:focus, .field textarea:focus { border-color: var(--accent); }
+  .field-row { display: flex; gap: 10px; }
+  .field-row .field { flex: 1; }
+  .dlg-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+  .danger { color: #c0392b !important; margin-right: auto; }
+
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--ink); color: #fff; padding: 11px 20px; border-radius: 12px;
+    font-size: 13.5px; opacity: 0; pointer-events: none; transition: all 0.25s; z-index: 99;
+    max-width: 90vw;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  footer { margin-top: 48px; font-size: 12px; color: #b8b2a8; text-align: center; line-height: 1.7; }
+  @media (max-width: 560px) { h1 { font-size: 26px; } .grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="eyebrow">✦ Vibe Coding Collection</span>
+    <h1>지평의 AI 앱 갤러리</h1>
+    <p class="subtitle">클로드와 함께 바이브 코딩으로 만든 앱과 웹을 한 곳에 모았습니다.<br>
+    GitHub(questionschool)에 새 앱을 올리면 <b>「GitHub 동기화」</b> 버튼으로 자동으로 불러올 수 있어요.</p>
+  </header>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="toolbar">
+    <div class="search">🔍 <input id="q" type="search" placeholder="앱 이름·설명 검색"></div>
+    <select id="sort">
+      <option value="updated">최신 업데이트순</option>
+      <option value="created">만든 날짜순</option>
+      <option value="name">이름순</option>
+    </select>
+    <button class="btn" id="syncBtn">⟳ GitHub 동기화</button>
+    <button class="btn primary" id="addBtn">＋ 직접 추가</button>
+  </div>
+  <div class="filters" id="filters"></div>
+
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="empty" style="display:none">검색 결과가 없어요.</div>
+
+  <footer id="foot"></footer>
+</div>
+
+<dialog id="dlg">
+  <form class="dlg-body" id="form" method="dialog">
+    <h2 id="dlgTitle">앱 직접 추가</h2>
+    <div class="field-row">
+      <div class="field" style="flex:0 0 76px">
+        <label>이모지</label>
+        <input id="f_emoji" maxlength="4" placeholder="🚀">
+      </div>
+      <div class="field">
+        <label>앱 이름 *</label>
+        <input id="f_name" required placeholder="예: 낭독 타이머">
+      </div>
+    </div>
+    <div class="field">
+      <label>한 줄 설명</label>
+      <input id="f_desc" placeholder="무엇을 하는 앱인가요?">
+    </div>
+    <div class="field">
+      <label>열기 링크 (URL)</label>
+      <input id="f_live" type="url" placeholder="https://...">
+    </div>
+    <div class="field">
+      <label>GitHub / 소스 링크 (선택)</label>
+      <input id="f_repo" type="url" placeholder="https://github.com/...">
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>만든 AI</label>
+        <select id="f_ai">
+          <option>Claude</option>
+          <option>ChatGPT</option>
+          <option>Gemini</option>
+          <option>Google AI Studio</option>
+          <option>기타</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>만든 날짜</label>
+        <input id="f_date" type="date">
+      </div>
+    </div>
+    <div class="dlg-actions">
+      <button type="button" class="btn danger" id="delBtn" style="display:none">삭제</button>
+      <button type="button" class="btn" id="cancelBtn">취소</button>
+      <button type="submit" class="btn primary" id="saveBtn">저장</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─────────────────────────────────────────────
+// 기본 데이터 (Claude가 관리 · 2026-07-24 기준)
+// ─────────────────────────────────────────────
+const GITHUB_USER = 'questionschool';
+
+const BASE_APPS = [
+  { id:'blanktalk', emoji:'💬', name:'Blank Talk', desc:'TLP 교육디자인과 협업 프로젝트 — 빈칸 대화 호스트 화면', ai:'Claude',
+    live:'https://questionschool.github.io/blanktalk/', repo:'https://github.com/questionschool/blanktalk', created:'2026-06-02', updated:'2026-07-24' },
+  { id:'imago', emoji:'💞', name:'이마고 실습 · 18단계 여정', desc:'당신이 원하는 사랑 만들기 — 이마고 실습 Tool Box', ai:'Claude',
+    live:'https://questionschool.github.io/imago/', repo:'https://github.com/questionschool/imago', created:'2026-07-21', updated:'2026-07-21' },
+  { id:'modoobookclub', emoji:'📚', name:'모두의 새벽 + 낭만북클럽', desc:'새벽 독서 모임과 낭만북클럽을 위한 웹', ai:'Claude',
+    live:'https://questionschool.github.io/modoobookclub/', repo:'https://github.com/questionschool/modoobookclub', created:'2026-05-22', updated:'2026-07-07' },
+  { id:'thomas', emoji:'🏫', name:'질문예술학교', desc:'질문예술학교 홈페이지', ai:'Claude',
+    live:'https://questionschool.github.io/thomas/', repo:'https://github.com/questionschool/thomas', created:'2026-05-16', updated:'2026-06-27' },
+  { id:'write', emoji:'✍️', name:'함께 쓰는 질문 노트', desc:'질문예술학교 — 함께 쓰는 글쓰기 노트', ai:'Claude',
+    live:'https://questionschool.github.io/write/', repo:'https://github.com/questionschool/write', created:'2026-05-30', updated:'2026-06-09' },
+  { id:'kanban', emoji:'🗂️', name:'토마스의 칸반', desc:'지평의 업무 흐름 관리를 위한 칸반 시스템', ai:'Claude',
+    live:'https://questionschool.github.io/kanban/', repo:'https://github.com/questionschool/kanban', created:'2026-06-02', updated:'2026-06-02' },
+  { id:'card', emoji:'🃏', name:'질문예술학교 카드', desc:'대화를 돕는 카드 툴킷', ai:'Claude',
+    live:'https://questionschool.github.io/card/', repo:'https://github.com/questionschool/card', created:'2026-05-31', updated:'2026-05-31' },
+  { id:'sangsang-leadership', emoji:'🌱', name:'상상 · 상승 리더십 스터디', desc:'상상 · 상승 리더십 스터디 자료 웹', ai:'Claude',
+    live:'https://questionschool.github.io/sangsang-leadership/', repo:'https://github.com/questionschool/sangsang-leadership', created:'2026-05-18', updated:'2026-05-18' },
+  { id:'edusquare-vote', emoji:'🗳️', name:'고승제 되기 선택 게임', desc:'에듀스퀘어 철학포럼 — 선택 게임', ai:'Claude',
+    live:'https://questionschool.github.io/edusquare-vote/', repo:'https://github.com/questionschool/edusquare-vote', created:'2026-05-16', updated:'2026-05-17' },
+  { id:'ThomasAI', emoji:'🤖', name:'Thomas AI', desc:'구글 AI 스튜디오와 연동한 프로젝트 (비공개 저장소)', ai:'Google AI Studio',
+    live:'', repo:'https://github.com/questionschool/ThomasAI', created:'', updated:'', private:true },
+];
+
+const AI_COLORS = { 'Claude':'#d97757', 'ChatGPT':'#10a37f', 'Gemini':'#886FBF', 'Google AI Studio':'#4285f4', '기타':'#64748b' };
+const COVER_HUES = [16, 32, 150, 200, 260, 330, 45, 180, 300, 90];
+
+// ─────────────────────────────────────────────
+// 저장소 (직접 추가/수정분)
+// ─────────────────────────────────────────────
+/*__STORAGE__*/
+const storage = (() => {
+  try {
+    const k = '__test__' + 1;
+    localStorage.setItem(k, '1'); localStorage.removeItem(k);
+    return {
+      load: () => { try { return JSON.parse(localStorage.getItem('jipyeong-ai-gallery') || 'null'); } catch(e) { return null; } },
+      save: (d) => { try { localStorage.setItem('jipyeong-ai-gallery', JSON.stringify(d)); } catch(e) {} },
+      persistent: true
+    };
+  } catch(e) {
+    let mem = null;
+    return { load: () => mem, save: (d) => { mem = d; }, persistent: false };
+  }
+})();
+/*__END_STORAGE__*/
+
+let store = storage.load() || { added: [], removed: [], overrides: {}, discovered: [] };
+let state = { q: '', ai: '전체', sort: 'updated' };
+
+function allApps() {
+  const merged = [...BASE_APPS, ...store.discovered, ...store.added]
+    .filter(a => !store.removed.includes(a.id))
+    .map(a => ({ ...a, ...(store.overrides[a.id] || {}) }));
+  const seen = new Set();
+  return merged.filter(a => seen.has(a.id) ? false : (seen.add(a.id), true));
+}
+
+// ─────────────────────────────────────────────
+// 렌더링
+// ─────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+
+function coverStyle(app, i) {
+  const hue = COVER_HUES[i % COVER_HUES.length];
+  return `background: linear-gradient(135deg, hsl(${hue},48%,92%), hsl(${(hue+40)%360},42%,86%))`;
+}
+
+function render() {
+  const apps = allApps();
+  const ais = ['전체', ...new Set(apps.map(a => a.ai))];
+
+  // 필터 칩
+  $('filters').innerHTML = ais.map(a =>
+    `<button class="chip ${state.ai===a?'on':''}" data-ai="${a}">${a}${a==='전체' ? ` ${apps.length}` : ''}</button>`).join('');
+  $('filters').querySelectorAll('.chip').forEach(c => c.onclick = () => { state.ai = c.dataset.ai; render(); });
+
+  // 통계
+  const byAi = {};
+  apps.forEach(a => byAi[a.ai] = (byAi[a.ai]||0)+1);
+  $('stats').innerHTML = `<span class="stat-chip"><b>${apps.length}</b>개의 앱</span>` +
+    Object.entries(byAi).map(([k,v]) => `<span class="stat-chip"><b>${v}</b>${k}</span>`).join('');
+
+  // 목록
+  let list = apps.filter(a =>
+    (state.ai==='전체' || a.ai===state.ai) &&
+    (!state.q || (a.name + ' ' + (a.desc||'')).toLowerCase().includes(state.q.toLowerCase())));
+
+  list.sort((x,y) => {
+    if (state.sort==='name') return x.name.localeCompare(y.name, 'ko');
+    const k = state.sort;
+    return (y[k]||'').localeCompare(x[k]||'');
+  });
+
+  $('empty').style.display = list.length ? 'none' : 'block';
+  $('grid').innerHTML = list.map((a) => {
+    const i = Math.abs([...a.id].reduce((s,c)=>s+c.charCodeAt(0),0));
+    const color = AI_COLORS[a.ai] || AI_COLORS['기타'];
+    const dates = [a.created && '만든 날 ' + a.created, a.updated && a.updated !== a.created && '업데이트 ' + a.updated].filter(Boolean).join(' · ');
+    return `<div class="card">
+      <div class="cover" style="${coverStyle(a,i)}">
+        <span>${a.emoji || '🚀'}</span>
+        ${a.isNew ? '<span class="badge-new">NEW 자동 발견</span>' : ''}
+        ${a.private ? '<span class="badge-private">🔒 비공개</span>' : ''}
+      </div>
+      <div class="body">
+        <h3>${esc(a.name)}</h3>
+        <p class="desc">${esc(a.desc || '')}</p>
+        <div class="meta">
+          <span class="ai-badge" style="background:${color}">${esc(a.ai)}</span>
+          ${dates ? `<span class="date">${dates}</span>` : ''}
+        </div>
+        <div class="actions">
+          ${a.live ? `<a class="btn primary" href="${esc(a.live)}" target="_blank" rel="noopener">열기 ↗</a>` : ''}
+          ${a.repo ? `<a class="btn ghost" href="${esc(a.repo)}" target="_blank" rel="noopener">GitHub</a>` : ''}
+        </div>
+        <button class="edit-link" data-edit="${esc(a.id)}">수정</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  $('grid').querySelectorAll('[data-edit]').forEach(b => b.onclick = () => openDialog(b.dataset.edit));
+
+  $('foot').innerHTML =
+    (storage.persistent
+      ? '직접 추가·수정한 내용은 이 브라우저에 자동 저장됩니다.'
+      : '이 화면에서 직접 추가한 내용은 창을 닫으면 사라져요. 영구 반영은 Claude에게 "갤러리에 ○○ 추가해줘"라고 요청하세요.')
+    + '<br>Made with Claude · ' + GITHUB_USER;
+}
+
+function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+// ─────────────────────────────────────────────
+// GitHub 자동 동기화
+// ─────────────────────────────────────────────
+async function syncGithub() {
+  toast('GitHub에서 불러오는 중…');
+  try {
+    const res = await fetch(`https://api.github.com/users/${GITHUB_USER}/repos?per_page=100`);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const repos = await res.json();
+    const known = new Set(allApps().map(a => a.id).concat(store.removed));
+    let added = 0, updated = 0;
+
+    for (const r of repos) {
+      if (r.fork) continue;
+      if (!known.has(r.name)) {
+        store.discovered.push({
+          id: r.name, emoji: '✨', name: r.name, isNew: true,
+          desc: r.description || 'GitHub에서 자동으로 발견된 새 앱',
+          ai: 'Claude',
+          live: r.has_pages ? `https://${GITHUB_USER}.github.io/${r.name}/` : (r.homepage || ''),
+          repo: r.html_url,
+          created: (r.created_at||'').slice(0,10), updated: (r.pushed_at||'').slice(0,10),
+        });
+        added++;
+      } else {
+        const app = allApps().find(a => a.id === r.name);
+        const pushed = (r.pushed_at||'').slice(0,10);
+        if (app && pushed && app.updated !== pushed) {
+          store.overrides[r.name] = { ...(store.overrides[r.name]||{}), updated: pushed };
+          updated++;
+        }
+      }
+    }
+    storage.save(store);
+    render();
+    toast(added ? `새 앱 ${added}개를 찾았어요! 🎉` : (updated ? `업데이트 날짜 ${updated}건 갱신 완료` : '새로운 앱이 없어요. 최신 상태입니다 ✓'));
+  } catch(e) {
+    toast('불러오기 실패 — 네트워크가 차단된 환경일 수 있어요');
+  }
+}
+
+// ─────────────────────────────────────────────
+// 직접 추가 / 수정
+// ─────────────────────────────────────────────
+let editingId = null;
+
+function openDialog(id) {
+  editingId = id || null;
+  const app = id ? allApps().find(a => a.id === id) : null;
+  $('dlgTitle').textContent = app ? '앱 수정' : '앱 직접 추가';
+  $('delBtn').style.display = app ? 'inline-flex' : 'none';
+  $('f_emoji').value = app?.emoji || '';
+  $('f_name').value = app?.name || '';
+  $('f_desc').value = app?.desc || '';
+  $('f_live').value = app?.live || '';
+  $('f_repo').value = app?.repo || '';
+  $('f_ai').value = app?.ai && [...$('f_ai').options].some(o => o.value === app.ai) ? app.ai : (app ? '기타' : 'Claude');
+  $('f_date').value = app?.created || '';
+  $('dlg').showModal();
+}
+
+$('form').onsubmit = (e) => {
+  const data = {
+    emoji: $('f_emoji').value.trim() || '🚀',
+    name: $('f_name').value.trim(),
+    desc: $('f_desc').value.trim(),
+    live: $('f_live').value.trim(),
+    repo: $('f_repo').value.trim(),
+    ai: $('f_ai').value,
+    created: $('f_date').value,
+  };
+  if (!data.name) return;
+  if (editingId) {
+    store.overrides[editingId] = { ...(store.overrides[editingId]||{}), ...data, isNew: false };
+  } else {
+    store.added.push({ id: 'custom-' + Math.random().toString(36).slice(2,8), updated: data.created, ...data });
+  }
+  storage.save(store);
+  render();
+  toast(storage.persistent ? '저장했어요 ✓' : '추가했어요 (창을 닫기 전까지 유지돼요)');
+};
+
+$('delBtn').onclick = () => {
+  if (editingId) {
+    store.removed.push(editingId);
+    storage.save(store);
+    $('dlg').close(); render(); toast('삭제했어요');
+  }
+};
+$('cancelBtn').onclick = () => $('dlg').close();
+$('addBtn').onclick = () => openDialog(null);
+$('syncBtn').onclick = syncGithub;
+$('q').oninput = (e) => { state.q = e.target.value; render(); };
+$('sort').onchange = (e) => { state.sort = e.target.value; render(); };
+
+let toastTimer;
+function toast(msg) {
+  const t = $('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+render();
+</script>
+</body>
+</html>
