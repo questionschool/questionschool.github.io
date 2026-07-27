@@ -1,0 +1,1469 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>야심찬 목표나무 (Ambitious Target Tree)</title>
+<style>
+  :root{
+    --green-900:#0d3b2e; --green-700:#14654c; --green-600:#1a7a5c; --green-500:#219a72;
+    --green-100:#e3f4ec; --green-50:#f2faf6;
+    --amber-600:#b45309; --amber-50:#fff8eb;
+    --red-600:#b91c1c; --red-50:#fdf0ef;
+    --ink:#1c2b26; --ink-soft:#5a6b64; --line:#d8e6df;
+    --card-shadow:0 1px 3px rgba(13,59,46,.08), 0 4px 14px rgba(13,59,46,.07);
+    --radius:14px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    font-family:"Pretendard","Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",system-ui,sans-serif;
+    background:linear-gradient(160deg,#f4faf7 0%,#eef6f1 55%,#e9f3ee 100%);
+    color:var(--ink); min-height:100vh; line-height:1.55;
+  }
+  button{font:inherit; cursor:pointer;}
+  textarea,input[type=text]{
+    font:inherit; width:100%; border:1.5px solid var(--line); border-radius:10px;
+    padding:10px 12px; background:#fff; color:var(--ink); resize:vertical;
+  }
+  textarea:focus,input[type=text]:focus{outline:none; border-color:var(--green-500); box-shadow:0 0 0 3px rgba(33,154,114,.15);}
+
+  /* ---------- header ---------- */
+  header{
+    position:sticky; top:0; z-index:50; background:rgba(244,250,247,.92); backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line); padding:10px 20px;
+    display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+  }
+  .logo{display:flex; align-items:center; gap:9px; font-weight:800; font-size:17px; color:var(--green-900);}
+  .logo svg{flex:none;}
+  .logo small{display:block; font-weight:500; font-size:11px; color:var(--ink-soft); letter-spacing:.02em;}
+  .tabs{display:flex; gap:4px; background:#e2ede7; border-radius:10px; padding:4px;}
+  .tabs button{border:none; background:transparent; padding:6px 14px; border-radius:8px; font-weight:600; color:var(--ink-soft);}
+  .tabs button.on{background:#fff; color:var(--green-900); box-shadow:0 1px 3px rgba(13,59,46,.12);}
+  .spacer{flex:1;}
+  .hbtns{display:flex; gap:8px; flex-wrap:wrap;}
+  .hbtns button{
+    border:1.5px solid var(--line); background:#fff; border-radius:9px; padding:6px 12px;
+    font-size:13px; font-weight:600; color:var(--ink);
+  }
+  .hbtns button:hover{border-color:var(--green-500); color:var(--green-700);}
+
+  main{max-width:1100px; margin:0 auto; padding:26px 20px 80px;}
+
+  /* ---------- wizard ---------- */
+  .steps{display:flex; gap:0; margin-bottom:26px; overflow-x:auto;}
+  .step-pill{
+    flex:1; min-width:110px; text-align:center; padding:10px 6px 12px; position:relative;
+    color:var(--ink-soft); font-size:13px; font-weight:600; border-bottom:3px solid var(--line);
+    background:none; border-top:none; border-left:none; border-right:none;
+  }
+  .step-pill .n{
+    display:inline-flex; width:24px; height:24px; border-radius:50%; align-items:center; justify-content:center;
+    background:#dfeae4; color:var(--ink-soft); font-size:12px; font-weight:700; margin-bottom:4px;
+  }
+  .step-pill.done .n{background:var(--green-500); color:#fff;}
+  .step-pill.cur{color:var(--green-900); border-bottom-color:var(--green-500);}
+  .step-pill.cur .n{background:var(--green-900); color:#fff;}
+  .step-pill:disabled{cursor:default;}
+  .step-pill:not(:disabled):hover{color:var(--green-700);}
+
+  .wizard{display:grid; grid-template-columns:1fr 320px; gap:22px; align-items:start;}
+  @media(max-width:860px){.wizard{grid-template-columns:1fr;}}
+  .panel{background:#fff; border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--card-shadow); padding:24px;}
+  .panel h2{font-size:19px; color:var(--green-900); margin-bottom:4px;}
+  .panel .sub{color:var(--ink-soft); font-size:14px; margin-bottom:18px;}
+  .guide{background:var(--green-50); border:1px solid #cfe7db; border-radius:var(--radius); padding:18px 20px; font-size:13.5px;}
+  .guide h3{font-size:13px; color:var(--green-700); text-transform:uppercase; letter-spacing:.06em; margin-bottom:10px; display:flex; align-items:center; gap:6px;}
+  .guide ul{padding-left:18px; display:flex; flex-direction:column; gap:8px; color:#2c443b;}
+  .guide .q{background:#fff; border-left:3px solid var(--green-500); border-radius:6px; padding:8px 11px; margin-top:12px; color:var(--green-900); font-weight:600; font-size:13px;}
+  .guide .ex{margin-top:12px; padding-top:10px; border-top:1px dashed #bcd9cc; color:var(--ink-soft);}
+  .guide .ex b{color:var(--ink);}
+
+  .field{margin-bottom:16px;}
+  .field label{display:block; font-weight:700; font-size:13.5px; margin-bottom:6px; color:var(--ink);}
+  .field .hint{font-weight:400; color:var(--ink-soft); font-size:12.5px; margin-left:4px;}
+
+  .nav{display:flex; justify-content:space-between; gap:10px; margin-top:22px;}
+  .btn{border:none; border-radius:10px; padding:10px 20px; font-weight:700; font-size:14.5px;}
+  .btn.primary{background:var(--green-600); color:#fff;}
+  .btn.primary:hover{background:var(--green-700);}
+  .btn.ghost{background:#eef4f1; color:var(--ink-soft);}
+  .btn.ghost:hover{color:var(--ink);}
+  .btn:disabled{opacity:.45; cursor:not-allowed;}
+
+  /* obstacle / io lists */
+  .obs-row{display:flex; gap:8px; align-items:flex-start; margin-bottom:10px;}
+  .obs-row .idx{
+    flex:none; width:26px; height:26px; margin-top:8px; border-radius:8px; background:var(--red-50);
+    color:var(--red-600); font-size:12.5px; font-weight:800; display:flex; align-items:center; justify-content:center;
+  }
+  .obs-row textarea{min-height:44px;}
+  .icon-btn{flex:none; margin-top:5px; border:none; background:none; color:#b7c6bf; font-size:17px; padding:6px; border-radius:8px;}
+  .icon-btn:hover{color:var(--red-600); background:var(--red-50);}
+
+  .io-pair{border:1.5px solid var(--line); border-radius:12px; padding:14px 16px; margin-bottom:14px; background:#fdfefd;}
+  .io-pair .ob{
+    display:flex; gap:8px; align-items:baseline; font-size:13.5px; color:var(--red-600);
+    background:var(--red-50); border-radius:8px; padding:8px 11px; margin-bottom:10px;
+  }
+  .io-pair .ob b{flex:none; font-size:12px; letter-spacing:.03em;}
+  .io-pair .arrow{ text-align:center; color:var(--green-500); font-size:15px; margin:2px 0 8px; font-weight:700;}
+  .io-pair label{font-size:12.5px; font-weight:700; color:var(--green-700); display:block; margin-bottom:5px;}
+  .io-pair textarea{min-height:44px;}
+  .io-pair .check{margin-top:8px; font-size:12.5px; color:var(--ink-soft);}
+
+  /* step 4 sequencing */
+  .seq-help{background:var(--amber-50); border:1px solid #f3dfb6; color:#7c5210; border-radius:10px; padding:10px 14px; font-size:13px; margin-bottom:16px;}
+  .seq-list{display:flex; flex-direction:column;}
+  .seq-item{
+    display:flex; align-items:center; gap:10px; background:#fff; border:1.5px solid var(--line);
+    border-radius:12px; padding:10px 12px; margin-bottom:8px; cursor:grab;
+  }
+  .seq-item.dragging{opacity:.4;}
+  .seq-item .lv{
+    flex:none; min-width:44px; text-align:center; background:var(--green-100); color:var(--green-700);
+    font-weight:800; font-size:12px; border-radius:8px; padding:5px 6px;
+  }
+  .seq-item .txt{flex:1; font-size:14px;}
+  .seq-item .txt small{display:block; color:var(--ink-soft); font-size:12px; margin-top:2px;}
+  .seq-item .mv{display:flex; flex-direction:column; gap:2px;}
+  .seq-item .mv button, .seq-item .par{
+    border:1px solid var(--line); background:#fff; border-radius:7px; font-size:12px; padding:2px 8px; color:var(--ink-soft);
+  }
+  .seq-item .mv button:hover{border-color:var(--green-500); color:var(--green-700);}
+  .seq-item .par{align-self:center; white-space:nowrap;}
+  .seq-item .par.on{background:var(--green-600); border-color:var(--green-600); color:#fff;}
+  .seq-gap{height:4px;}
+  .seq-gap.over{height:34px; border:2px dashed var(--green-500); border-radius:10px; background:var(--green-50); margin-bottom:8px;}
+
+  /* ---------- tree ---------- */
+  .tree-wrap{display:grid; grid-template-columns:1fr 300px; gap:22px; align-items:start;}
+  @media(max-width:900px){.tree-wrap{grid-template-columns:1fr;}}
+  .tree-board{background:#fff; border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--card-shadow); padding:30px 26px 34px;}
+  .tree-title{text-align:center; margin-bottom:4px; font-size:13px; color:var(--ink-soft); font-weight:600; letter-spacing:.04em;}
+  .tree{display:flex; flex-direction:column; align-items:center;}
+  .goal-node{
+    background:linear-gradient(135deg,var(--green-700),var(--green-900)); color:#fff;
+    border-radius:100px; padding:18px 34px; max-width:560px; text-align:center;
+    box-shadow:0 6px 20px rgba(13,59,46,.25); position:relative;
+  }
+  .goal-node .tag{font-size:11px; font-weight:700; letter-spacing:.12em; opacity:.75; margin-bottom:4px;}
+  .goal-node .txt{font-size:16.5px; font-weight:700; line-height:1.45; white-space:pre-wrap;}
+  .goal-node .by{font-size:12px; opacity:.8; margin-top:5px;}
+  .tree-arrow{color:var(--green-500); margin:6px 0; flex:none;}
+  .level{width:100%; max-width:860px;}
+  .level-label{text-align:center; font-size:11.5px; font-weight:800; color:var(--green-600); letter-spacing:.08em; margin-bottom:8px;}
+  .level-cards{display:flex; gap:12px; justify-content:center; flex-wrap:wrap;}
+  .io-card{
+    background:var(--green-50); border:1.5px solid #c8e2d5; border-radius:12px; padding:12px 14px;
+    width:min(100%,320px); flex:1 1 240px; max-width:340px; position:relative; transition:box-shadow .15s;
+  }
+  .io-card:hover{box-shadow:var(--card-shadow);}
+  .io-card.done{background:#f2f7f4; border-color:#d9e6df;}
+  .io-card.done .io-txt{color:#7d938a; text-decoration:line-through; text-decoration-color:rgba(33,154,114,.5);}
+  .io-card .io-txt{font-size:14px; font-weight:600; color:var(--green-900); white-space:pre-wrap;}
+  .io-card .ob-txt{margin-top:8px; font-size:12px; color:var(--red-600); background:var(--red-50); border-radius:7px; padding:5px 8px; white-space:pre-wrap;}
+  .io-card .ob-txt b{font-size:10.5px; letter-spacing:.04em;}
+  .io-card .card-foot{display:flex; align-items:center; justify-content:space-between; margin-top:9px;}
+  .io-card .done-toggle{display:flex; align-items:center; gap:5px; font-size:12px; color:var(--ink-soft); cursor:pointer; user-select:none;}
+  .io-card .edit-link{border:none; background:none; font-size:12px; color:var(--green-600); font-weight:700; padding:2px 4px; border-radius:6px;}
+  .io-card .edit-link:hover{background:var(--green-100);}
+  .progress-line{margin:0 auto 22px; max-width:400px; text-align:center;}
+  .progress-line .bar{height:8px; background:#e2ede7; border-radius:99px; overflow:hidden; margin-top:6px;}
+  .progress-line .bar i{display:block; height:100%; background:var(--green-500); border-radius:99px; transition:width .3s;}
+  .progress-line small{color:var(--ink-soft); font-size:12.5px;}
+
+  .side-panel{display:flex; flex-direction:column; gap:16px;}
+  .readout{background:#fff; border:1px solid var(--line); border-radius:var(--radius); padding:16px 18px; font-size:13px;}
+  .readout h3{font-size:13px; color:var(--green-700); margin-bottom:10px; letter-spacing:.05em;}
+  .readout ol{padding-left:18px; display:flex; flex-direction:column; gap:7px; color:#2c443b;}
+  .readout .final{margin-top:10px; font-weight:700; color:var(--green-900);}
+  .checklist label{display:flex; gap:8px; align-items:flex-start; font-size:13px; padding:6px 0; cursor:pointer; color:#2c443b;}
+  .checklist input{margin-top:3px; accent-color:var(--green-600);}
+
+  .empty{
+    text-align:center; padding:70px 30px; color:var(--ink-soft);
+  }
+  .empty .big{font-size:40px; margin-bottom:10px;}
+  .empty button{margin-top:16px;}
+
+  /* modal */
+  .modal-bg{position:fixed; inset:0; background:rgba(13,32,26,.45); display:flex; align-items:center; justify-content:center; z-index:100; padding:20px;}
+  .modal{background:#fff; border-radius:16px; padding:24px; width:min(520px,100%); box-shadow:0 20px 60px rgba(0,0,0,.3); max-height:90vh; overflow:auto;}
+  .modal h3{color:var(--green-900); margin-bottom:14px; font-size:17px;}
+  .modal .nav{margin-top:18px;}
+  .modal .danger{background:var(--red-50); color:var(--red-600);}
+
+  /* ---------- AI feedback & suggestions ---------- */
+  .fb{font-size:12px; border-radius:7px; padding:5px 9px; margin:2px 0 8px 34px; line-height:1.45;}
+  .fb.ok{background:var(--green-100); color:var(--green-700);}
+  .fb.bad{background:var(--amber-50); color:var(--amber-600);}
+  .fb b{font-size:11px;}
+  .ai-overall{background:var(--green-50); border:1px solid #cfe7db; border-radius:10px; padding:10px 13px; font-size:13px; color:#2c443b; margin-bottom:12px;}
+  .ai-sugs{border-top:1px dashed var(--line); margin-top:14px; padding-top:12px;}
+  .ai-sugs h4{font-size:13px; color:var(--green-700); margin-bottom:8px;}
+  .ai-sug-row{display:flex; gap:8px; align-items:center; font-size:13.5px; background:#f6faf8; border-radius:9px; padding:8px 11px; margin-bottom:6px;}
+  .ai-sug-row span{flex:1;}
+  .ai-sug-row button{border:1px solid var(--line); background:#fff; border-radius:7px; padding:3px 10px; font-size:12px; font-weight:700; color:var(--green-700);}
+  .ai-sug-row button:hover{border-color:var(--green-500);}
+  .ai-sug-row button.hide{color:#b7c6bf;}
+  .ai-score{display:inline-flex; align-items:center; gap:6px; background:var(--green-900); color:#fff; border-radius:99px; padding:4px 12px; font-size:12.5px; font-weight:700;}
+
+  /* ---------- action plan (step 5) ---------- */
+  .ap-io{border:1.5px solid var(--line); border-radius:12px; padding:14px 16px; margin-bottom:14px; background:#fdfefd;}
+  .ap-io .ap-head{display:flex; align-items:center; gap:9px; margin-bottom:10px;}
+  .ap-io .ap-head .lv{flex:none; background:var(--green-100); color:var(--green-700); font-weight:800; font-size:11.5px; border-radius:7px; padding:4px 8px;}
+  .ap-io .ap-head .io{font-size:14px; font-weight:700; color:var(--green-900); flex:1;}
+  .ap-row{display:grid; grid-template-columns:1fr 110px 110px 30px; gap:6px; margin-bottom:6px; align-items:center;}
+  .ap-row input{font:inherit; font-size:13px; border:1.5px solid var(--line); border-radius:8px; padding:7px 10px; width:100%;}
+  .ap-row input:focus{outline:none; border-color:var(--green-500);}
+  .ap-row .del{border:none; background:none; color:#b7c6bf; font-size:15px; cursor:pointer; padding:4px;}
+  .ap-row .del:hover{color:var(--red-600);}
+  .ap-add{display:flex; gap:8px; margin-top:8px;}
+  .ap-add button{border:1px solid var(--line); background:#fff; border-radius:8px; padding:5px 12px; font-size:12.5px; font-weight:700; color:var(--ink-soft);}
+  .ap-add button:hover{border-color:var(--green-500); color:var(--green-700);}
+  .ap-hint{font-size:12px; color:var(--ink-soft); margin-bottom:8px;}
+
+  /* ---------- master plan table ---------- */
+  .mp-wrap{margin-top:30px;}
+  .mp-wrap h3{text-align:center; font-size:14px; color:var(--green-900); letter-spacing:.04em; margin-bottom:12px;}
+  .mp-table{width:100%; border-collapse:collapse; font-size:12.5px;}
+  .mp-table th{background:var(--green-900); color:#fff; padding:7px 10px; text-align:left; font-size:11.5px; letter-spacing:.04em;}
+  .mp-table td{border:1px solid var(--line); padding:7px 10px; vertical-align:top;}
+  .mp-table td.lv{white-space:nowrap; font-weight:800; color:var(--green-700); background:var(--green-50); font-size:11.5px;}
+  .mp-table td.io{font-weight:600; color:var(--green-900);}
+  .mp-table td.meta{white-space:nowrap; color:var(--ink-soft);}
+  .mp-table tr.empty td{color:#b7c6bf; font-style:italic;}
+
+  /* ---------- target coach ---------- */
+  .coach-btn{
+    display:flex; align-items:center; gap:7px; width:100%; justify-content:center;
+    border:1.5px dashed #b9d9c9; background:var(--green-50); color:var(--green-700);
+    border-radius:10px; padding:9px 14px; font-weight:700; font-size:13.5px; margin:-6px 0 16px;
+  }
+  .coach-btn:hover{background:var(--green-100); border-style:solid;}
+  .modal.wide{width:min(680px,100%);}
+  .diag{display:flex; flex-direction:column; gap:6px; margin-bottom:6px;}
+  .diag-row{display:flex; gap:9px; align-items:flex-start; font-size:13.5px; padding:8px 11px; border-radius:9px; background:#f6faf8;}
+  .diag-row .mark{flex:none; width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; margin-top:1px;}
+  .diag-row.ok .mark{background:var(--green-100); color:var(--green-700);}
+  .diag-row.bad{background:var(--red-50);}
+  .diag-row.bad .mark{background:#f6d5d2; color:var(--red-600);}
+  .diag-row.ask{background:var(--amber-50);}
+  .diag-row.ask .mark{background:#f3dfb6; color:var(--amber-600);}
+  .diag-row b{display:block; font-size:13px;}
+  .diag-row small{color:var(--ink-soft); font-size:12.5px; line-height:1.45;}
+  .sug-head{display:flex; align-items:center; justify-content:space-between; gap:10px; margin:18px 0 8px;}
+  .sug-head h4{font-size:14px; color:var(--green-900);}
+  .sug-head .src{font-size:11.5px; font-weight:700; padding:3px 9px; border-radius:99px; background:#eef4f1; color:var(--ink-soft);}
+  .sug-head .src.ai{background:var(--green-100); color:var(--green-700);}
+  .sug-card{border:1.5px solid var(--line); border-radius:11px; padding:12px 14px; margin-bottom:9px; background:#fff;}
+  .sug-card .t{font-size:14px; font-weight:600; color:var(--ink); white-space:pre-wrap;}
+  .sug-card .w{font-size:12.5px; color:var(--ink-soft); margin-top:6px; padding-top:6px; border-top:1px dashed var(--line);}
+  .sug-card .use{margin-top:9px; border:none; background:var(--green-600); color:#fff; border-radius:8px; padding:6px 14px; font-size:12.5px; font-weight:700;}
+  .sug-card .use:hover{background:var(--green-700);}
+  .sug-note{font-size:12px; color:var(--ink-soft); margin:4px 0 0;}
+  .ai-box{margin-top:16px; border-top:1px solid var(--line); padding-top:12px;}
+  .ai-box summary{cursor:pointer; font-size:13px; font-weight:700; color:var(--ink-soft); user-select:none;}
+  .ai-box summary:hover{color:var(--green-700);}
+  .ai-box .inner{margin-top:10px; display:flex; flex-direction:column; gap:9px;}
+  .ai-box input{font:inherit; font-size:13px; width:100%; border:1.5px solid var(--line); border-radius:9px; padding:8px 11px;}
+  .ai-box .note{font-size:12px; color:var(--ink-soft); line-height:1.5;}
+  .ai-run{border:none; background:var(--green-900); color:#fff; border-radius:9px; padding:8px 16px; font-size:13px; font-weight:700; display:inline-flex; align-items:center; gap:7px;}
+  .ai-run:hover{background:var(--green-700);}
+  .ai-run:disabled{opacity:.5; cursor:wait;}
+  .ai-err{font-size:12.5px; color:var(--red-600); background:var(--red-50); border-radius:8px; padding:8px 11px;}
+  .spin{display:inline-block; width:13px; height:13px; border:2px solid rgba(255,255,255,.35); border-top-color:#fff; border-radius:50%; animation:sp .7s linear infinite;}
+  @keyframes sp{to{transform:rotate(360deg);}}
+
+  .toast{
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%); z-index:200;
+    background:var(--green-900); color:#fff; padding:10px 20px; border-radius:99px; font-size:13.5px; font-weight:600;
+    box-shadow:0 8px 24px rgba(0,0,0,.25); opacity:0; transition:opacity .25s; pointer-events:none;
+  }
+  .toast.show{opacity:1;}
+
+  /* ---------- export capture ---------- */
+  body.exporting .no-print{display:none !important;}
+  body.exporting .edit-link{display:none !important;}
+  body.exporting .done-toggle{display:none !important;}
+
+  /* ---------- print ---------- */
+  @media print{
+    body{background:#fff;}
+    header, .side-panel, .no-print{display:none !important;}
+    main{padding:0; max-width:none;}
+    .tree-wrap{grid-template-columns:1fr;}
+    .tree-board{border:none; box-shadow:none; padding:10px 0;}
+    .io-card{break-inside:avoid;}
+    .io-card .edit-link, .io-card .done-toggle input{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <svg width="30" height="30" viewBox="0 0 30 30" fill="none">
+      <circle cx="15" cy="8" r="5.5" fill="#1a7a5c"/>
+      <circle cx="8.5" cy="15" r="4.5" fill="#219a72"/>
+      <circle cx="21.5" cy="15" r="4.5" fill="#219a72"/>
+      <rect x="13.4" y="14" width="3.2" height="10" rx="1.4" fill="#7a5230"/>
+      <path d="M15 14 L10 19 M15 15 L20 20" stroke="#7a5230" stroke-width="1.6" stroke-linecap="round"/>
+    </svg>
+    <div>야심찬 목표나무<small>Ambitious Target Tree · TOC Thinking Process</small></div>
+  </div>
+  <nav class="tabs" aria-label="보기 전환">
+    <button id="tabWizard" class="on">마법사</button>
+    <button id="tabTree">목표나무</button>
+  </nav>
+  <div class="spacer"></div>
+  <div class="hbtns">
+    <button id="btnExample">예시</button>
+    <button id="btnNew">새로 만들기</button>
+    <button id="btnLoad">불러오기</button>
+    <button id="btnSave">저장</button>
+    <button id="btnPrint">인쇄</button>
+    <button id="btnPdf">PDF</button>
+    <button id="btnPng">PNG</button>
+    <button id="btnAI" title="Claude API 연결 설정">✦ AI</button>
+    <input type="file" id="fileInput" accept=".json,application/json" hidden>
+  </div>
+</header>
+
+<main id="app"></main>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+/* ================= state ================= */
+const LEVEL_NAMES = i => (i+1) + "단";
+let state = blankState();
+let view = "wizard";           // wizard | tree
+let step = 1;                  // 1..5
+let checkboxes = {};           // step5 review checklist (session only)
+
+function blankState(){
+  return { app:"att", version:1, title:"", target:"", deadline:"", items:[] };
+}
+function uid(){ return "i" + Math.random().toString(36).slice(2,9); }
+function newItem(){ return {id:uid(), obstacle:"", io:"", parallel:false, done:false, actions:[]}; }
+function normalizeItem(it){
+  it.id = it.id||uid(); it.obstacle = it.obstacle||""; it.io = it.io||"";
+  it.parallel = !!it.parallel; it.done = !!it.done;
+  it.actions = Array.isArray(it.actions)? it.actions : [];
+  it.actions.forEach(a=>{ a.id = a.id||uid(); a.task = a.task||""; a.who = a.who||""; a.when = a.when||""; });
+  return it;
+}
+function esc(s){ return (s??"").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+
+/* levels: group items by parallel flag (first item never parallel) */
+function levels(){
+  const lv = [];
+  state.items.forEach((it,i)=>{
+    if(i===0 || !it.parallel) lv.push([it]);
+    else lv[lv.length-1].push(it);
+  });
+  return lv;
+}
+function findItem(id){ return state.items.find(x=>x.id===id); }
+
+/* ================= persistence ================= */
+function saveFile(){
+  const name = (state.title || "목표나무").replace(/[\\/:*?"<>|]/g,"_");
+  const blob = new Blob([JSON.stringify(state,null,2)], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = name + ".att.json";
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  toast("파일로 저장했습니다");
+}
+function loadFile(file){
+  const r = new FileReader();
+  r.onload = () => {
+    try{
+      const d = JSON.parse(r.result);
+      if(d.app!=="att" || !Array.isArray(d.items)) throw 0;
+      d.items.forEach(normalizeItem);
+      state = Object.assign(blankState(), d);
+      step = state.target ? (state.items.length? (state.items.every(i=>i.io)?6:3) : 2) : 1;
+      view = state.items.length && state.items.every(i=>i.io) ? "tree" : "wizard";
+      render(); toast("불러왔습니다: " + (state.title||"제목 없음"));
+    }catch(e){ toast("올바른 목표나무 파일(.att.json)이 아닙니다"); }
+  };
+  r.readAsText(file);
+}
+
+/* ================= example ================= */
+function loadExample(){
+  state = {
+    app:"att", version:1,
+    title:"신규 코칭 프로그램 론칭",
+    target:"12개월 안에 기업 대상 그룹코칭 프로그램을 정규 상품으로 론칭하여, 유료 고객사 5곳을 확보한다.",
+    deadline:"2027년 7월까지",
+    items:[
+      {id:uid(), obstacle:"프로그램의 표준 커리큘럼이 없다.", io:"8회기 표준 커리큘럼과 운영 매뉴얼이 완성되어 있다.", parallel:false, done:false,
+       actions:[{id:uid(), task:"기존 코칭 세션 기록에서 핵심 모듈 8개 추출", who:"본인", when:"8월 2주"},{id:uid(), task:"회기별 워크시트·운영 매뉴얼 초안 작성", who:"본인", when:"8월 4주"}]},
+      {id:uid(), obstacle:"기업 고객을 만날 접점이 없다.", io:"HR 담당자 대상 무료 설명회 채널이 운영되고 있다.", parallel:true, done:false,
+       actions:[{id:uid(), task:"HR 커뮤니티 3곳에 설명회 공지 게시", who:"본인", when:"9월 1주"}]},
+      {id:uid(), obstacle:"프로그램 효과를 증명할 자료가 없다.", io:"파일럿 2개 조직의 전후 측정 결과 리포트가 확보되어 있다.", parallel:false, done:false, actions:[]},
+      {id:uid(), obstacle:"제안서와 가격 정책이 정해져 있지 않다.", io:"표준 제안서와 3단계 가격 정책이 확정되어 있다.", parallel:false, done:false, actions:[]},
+      {id:uid(), obstacle:"운영을 도울 인력이 없다.", io:"운영 파트너 코치 2명이 계약되어 있다.", parallel:true, done:false, actions:[]}
+    ]
+  };
+  state.items.forEach(normalizeItem);
+  step = 6; view = "wizard"; checkboxes = {};
+  render(); toast("예시를 불러왔습니다 — 6단계(검토)부터 살펴보세요");
+}
+
+/* ================= toast ================= */
+let toastT;
+function toast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  clearTimeout(toastT); toastT = setTimeout(()=>t.classList.remove("show"), 2600);
+}
+
+/* ================= render root ================= */
+function render(){
+  document.getElementById("tabWizard").classList.toggle("on", view==="wizard");
+  document.getElementById("tabTree").classList.toggle("on", view==="tree");
+  const app = document.getElementById("app");
+  app.innerHTML = "";
+  if(view==="wizard") renderWizard(app); else renderTreeView(app);
+}
+
+/* ================= wizard ================= */
+const STEP_META = [
+  {n:1, name:"야심찬 목표"},
+  {n:2, name:"장애물"},
+  {n:3, name:"중간목표(IO)"},
+  {n:4, name:"순서 배열"},
+  {n:5, name:"실행계획"},
+  {n:6, name:"검토·완성"}
+];
+function maxReachableStep(){
+  if(!state.target.trim()) return 1;
+  if(!state.items.length) return 2;
+  if(!state.items.every(i=>i.io && i.io.trim())) return 3;
+  return 6;
+}
+function renderWizard(app){
+  const reach = maxReachableStep();
+  const stepsEl = document.createElement("div");
+  stepsEl.className = "steps no-print";
+  STEP_META.forEach(m=>{
+    const b = document.createElement("button");
+    b.className = "step-pill" + (m.n===step?" cur":"") + (m.n<step?" done":"");
+    b.disabled = m.n > reach;
+    b.innerHTML = `<span class="n">${m.n<step?"✓":m.n}</span><br>${m.name}`;
+    b.onclick = ()=>{ commitStepInputs(); step = m.n; render(); };
+    stepsEl.appendChild(b);
+  });
+  app.appendChild(stepsEl);
+
+  const grid = document.createElement("div");
+  grid.className = "wizard";
+  const panel = document.createElement("section");
+  panel.className = "panel";
+  const guide = document.createElement("aside");
+  guide.className = "guide no-print";
+  grid.append(panel, guide);
+  app.appendChild(grid);
+
+  ({1:step1,2:step2,3:step3,4:step4,5:stepActions,6:stepReview})[step](panel, guide);
+}
+
+/* --- commit inputs currently on screen (so switching steps doesn't lose text) --- */
+function commitStepInputs(){
+  document.querySelectorAll("[data-bind]").forEach(el=>{
+    const [kind,id] = el.dataset.bind.split("|");
+    if(kind==="target") state.target = el.value;
+    else if(kind==="title") state.title = el.value;
+    else if(kind==="deadline") state.deadline = el.value;
+    else if(kind==="obstacle"){ const it=findItem(id); if(it) it.obstacle = el.value; }
+    else if(kind==="io"){ const it=findItem(id); if(it) it.io = el.value; }
+    else if(kind==="task"||kind==="who"||kind==="when"){
+      const [,iid,aid] = el.dataset.bind.split("|");
+      const it = findItem(iid);
+      const a = it && it.actions.find(x=>x.id===aid);
+      if(a) a[kind] = el.value;
+    }
+  });
+}
+
+function navButtons(panel, {backTo, nextTo, nextLabel, canNext, onNext}){
+  const nav = document.createElement("div");
+  nav.className = "nav no-print";
+  const back = document.createElement("button");
+  back.className = "btn ghost";
+  back.textContent = "← 이전";
+  back.style.visibility = backTo? "visible":"hidden";
+  back.onclick = ()=>{ commitStepInputs(); step = backTo; render(); };
+  const next = document.createElement("button");
+  next.className = "btn primary";
+  next.textContent = nextLabel || "다음 →";
+  next.onclick = ()=>{
+    commitStepInputs();
+    if(canNext && !canNext()) return;
+    if(onNext) return onNext();
+    step = nextTo; render();
+  };
+  nav.append(back, next);
+  panel.appendChild(nav);
+}
+
+/* ---- STEP 1 : ambitious target ---- */
+function step1(panel, guide){
+  panel.innerHTML = `
+    <h2>1단계 · 야심찬 목표 정의</h2>
+    <p class="sub">지금의 방식과 자원으로는 도달하기 어려워 보이는, 그러나 도달하면 큰 가치가 있는 목표를 하나의 문장으로 서술합니다.</p>
+    <div class="field">
+      <label>프로젝트 이름 <span class="hint">(선택)</span></label>
+      <input type="text" data-bind="title|" value="${esc(state.title)}" placeholder="예: 신규 코칭 프로그램 론칭">
+    </div>
+    <div class="field">
+      <label>야심찬 목표 (Ambitious Target)</label>
+      <textarea data-bind="target|" rows="3" placeholder="예: 12개월 안에 기업 대상 그룹코칭 프로그램을 정규 상품으로 론칭하여, 유료 고객사 5곳을 확보한다.">${esc(state.target)}</textarea>
+    </div>
+    <div class="field">
+      <label>목표 시점 <span class="hint">(선택)</span></label>
+      <input type="text" data-bind="deadline|" value="${esc(state.deadline)}" placeholder="예: 2027년 7월까지">
+    </div>
+    <button class="coach-btn no-print" id="btnCoach">✦ 목표 점검 · 수정안 제안 받기</button>`;
+  panel.querySelector("#btnCoach").onclick = ()=>{
+    commitStepInputs();
+    if(!state.target.trim()){ toast("먼저 목표를 적은 뒤 점검을 받아 보세요"); return; }
+    openTargetCoach();
+  };
+  guide.innerHTML = `
+    <h3>◈ 방법론 가이드</h3>
+    <ul>
+      <li><b>도전적이되 원하는 것</b> — “해야 하는 것”이 아니라 진심으로 원하는 결과를 적습니다.</li>
+      <li><b>달성된 상태로 서술</b> — 활동이 아닌 도달한 상태를 씁니다. (“노력한다” ✕ → “확보한다” ○)</li>
+      <li><b>판별 가능하게</b> — 달성 여부를 누구나 판단할 수 있도록 구체적으로.</li>
+    </ul>
+    <div class="q">점검 질문 — “이 목표가 달성된 모습을 그릴 수 있는가? 지금 방식 그대로는 어렵게 느껴지는가?”</div>
+    <div class="ex"><b>왜 ‘야심찬’이어야 하나?</b><br>쉬워 보이는 목표는 장애물이 드러나지 않아 나무를 만들 이유가 없습니다. 장애물이 여럿 떠오른다면 좋은 목표입니다.</div>`;
+  navButtons(panel, {backTo:null, nextTo:2, canNext(){
+    if(!state.target.trim()){ toast("야심찬 목표를 먼저 서술해 주세요"); return false; }
+    return true;
+  }});
+}
+
+/* ---- STEP 2 : obstacles ---- */
+function step2(panel, guide){
+  panel.innerHTML = `
+    <h2>2단계 · 장애물 나열</h2>
+    <p class="sub">“그 목표는 어렵다, 왜냐하면 ___ 때문이다.” — 빈칸에 들어갈 것을 모두 꺼내 놓습니다. 지금 실제로 존재하는 조건만 적습니다.</p>
+    <div id="obsList"></div>
+    <button class="btn ghost no-print" id="addObs" style="width:100%">＋ 장애물 추가</button>
+    <button class="coach-btn no-print" id="aiObs" style="margin-top:10px">✦ AI 검토 · 추가 장애물 제안</button>
+    <div id="obsAI"></div>`;
+  const list = panel.querySelector("#obsList");
+  function draw(){
+    commitStepInputs();
+    list.innerHTML = "";
+    state.items.forEach((it,i)=>{
+      const row = document.createElement("div");
+      row.className = "obs-row";
+      row.innerHTML = `
+        <div class="idx">${i+1}</div>
+        <textarea data-bind="obstacle|${it.id}" rows="1" placeholder="예: 프로그램의 표준 커리큘럼이 없다.">${esc(it.obstacle)}</textarea>
+        <button class="icon-btn" title="삭제">✕</button>`;
+      row.querySelector(".icon-btn").onclick = ()=>{
+        commitStepInputs();
+        state.items = state.items.filter(x=>x.id!==it.id);
+        if(state.items[0]) state.items[0].parallel=false;
+        draw();
+      };
+      list.appendChild(row);
+      const fb = aiFb.obstacles[it.id];
+      if(fb){
+        const chip = document.createElement("div");
+        chip.className = "fb " + (fb.isValid? "ok":"bad");
+        chip.innerHTML = `<b>${fb.isValid?"✓ AI":"! AI"}</b> ${esc(fb.feedback)}`;
+        list.appendChild(chip);
+      }
+    });
+    drawAI();
+  }
+  function drawAI(){
+    const box = panel.querySelector("#obsAI");
+    box.innerHTML = "";
+    if(aiFb.obstacleOverall){
+      box.innerHTML += `<div class="ai-overall"><b>AI 총평</b> — ${esc(aiFb.obstacleOverall)}</div>`;
+    }
+    if(aiFb.obstacleSugs.length){
+      const s = document.createElement("div");
+      s.className = "ai-sugs";
+      s.innerHTML = `<h4>AI 추가 장애물 제안</h4>` + aiFb.obstacleSugs.map((t,i)=>`
+        <div class="ai-sug-row"><span>${esc(t)}</span>
+          <button data-a="add" data-i="${i}">＋ 추가</button>
+          <button data-a="hide" data-i="${i}" class="hide">숨김</button></div>`).join("");
+      s.querySelectorAll("button").forEach(b=>b.onclick = ()=>{
+        const t = aiFb.obstacleSugs[+b.dataset.i];
+        aiFb.obstacleSugs.splice(+b.dataset.i,1);
+        if(b.dataset.a==="add"){ commitStepInputs(); const it = newItem(); it.obstacle = t; state.items.push(it); }
+        else aiFb.excluded.push(t);
+        draw();
+      });
+      box.appendChild(s);
+    }
+  }
+  panel.querySelector("#aiObs").onclick = ()=>{
+    commitStepInputs();
+    state.items = state.items.filter(it=>it.obstacle.trim() || it.io.trim());
+    if(!state.items.length){ toast("장애물을 먼저 1개 이상 적어 주세요"); draw(); return; }
+    ensureAI(async ()=>{
+      const btn = panel.querySelector("#aiObs");
+      btn.disabled = true; btn.innerHTML = `<span class="spin" style="border-color:rgba(26,122,92,.3);border-top-color:var(--green-700)"></span> AI 검토 중…`;
+      try{
+        const r = await aiObstacleReview();
+        aiFb.obstacleOverall = r.overall||"";
+        (r.feedbacks||[]).forEach(f=>{ aiFb.obstacles[f.id] = f; });
+        const have = new Set(state.items.map(i=>i.obstacle.trim()));
+        aiFb.obstacleSugs = (r.suggestions||[]).filter(t=>!have.has(t.trim()));
+        draw();
+      }catch(e){ toast(e.message||"AI 호출에 실패했습니다"); }
+      finally{ btn.disabled = false; btn.innerHTML = "✦ AI 검토 · 추가 장애물 제안"; }
+    });
+  };
+  panel.querySelector("#addObs").onclick = ()=>{
+    commitStepInputs();
+    state.items.push(newItem());
+    draw();
+    const tas = list.querySelectorAll("textarea");
+    if(tas.length) tas[tas.length-1].focus();
+  };
+  draw();
+  if(!state.items.length) panel.querySelector("#addObs").click();
+
+  guide.innerHTML = `
+    <h3>◈ 방법론 가이드</h3>
+    <ul>
+      <li><b>검열하지 않기</b> — 사소해 보여도 일단 전부 꺼냅니다. 장애물이 많을수록 나무가 튼튼해집니다.</li>
+      <li><b>실재하는 조건만</b> — 걱정·추측이 아니라 지금 존재하는 사실을 적습니다.</li>
+      <li><b>하나에 하나씩</b> — 한 칸에는 장애물 하나만. “A도 없고 B도 없다”는 둘로 나눕니다.</li>
+      <li><b>부정형이 자연스럽습니다</b> — “~이 없다 / ~이 부족하다 / ~을 모른다”.</li>
+    </ul>
+    <div class="q">점검 질문 — “이것이 정말 목표 달성을 막고 있는가? 지금 실제로 존재하는가?”</div>
+    <div class="ex"><b>권장 개수</b><br>보통 4~10개가 나옵니다. 2개 이하라면 목표가 충분히 야심찬지 다시 살펴보세요.</div>`;
+  navButtons(panel, {backTo:1, nextTo:3, canNext(){
+    state.items = state.items.filter(it=>it.obstacle.trim() || it.io.trim());
+    if(state.items[0]) state.items[0].parallel=false;
+    if(!state.items.length){ toast("장애물을 1개 이상 적어 주세요"); return false; }
+    if(state.items.length<3 && !confirm("장애물이 " + state.items.length + "개입니다.\n목표가 충분히 야심차다면 보통 더 많은 장애물이 떠오릅니다.\n이대로 진행할까요?")) return false;
+    return true;
+  }});
+}
+
+/* ---- STEP 3 : obstacles → IOs ---- */
+function step3(panel, guide){
+  panel.innerHTML = `
+    <h2>3단계 · 장애물을 중간목표(IO)로 전환</h2>
+    <p class="sub">장애물마다 “이 장애물이 더 이상 나를 막지 못하는 상태”를 <b>이미 달성된 긍정형 문장</b>으로 서술합니다. 중간목표는 행동이 아니라 <b>상태</b>입니다.</p>
+    <div id="ioList"></div>
+    <button class="coach-btn no-print" id="aiIO">✦ AI로 변환 제안 · 작성한 IO 검토</button>`;
+  aiFb.ioMaps = aiFb.ioMaps||{};
+  const list = panel.querySelector("#ioList");
+  function draw(){
+    commitStepInputs();
+    list.innerHTML = "";
+    state.items.forEach((it,i)=>{
+      const box = document.createElement("div");
+      box.className = "io-pair";
+      const fb = aiFb.ios[it.id];
+      const map = aiFb.ioMaps[it.id];
+      box.innerHTML = `
+        <div class="ob"><b>장애물 ${i+1}</b><span>${esc(it.obstacle)}</span></div>
+        <div class="arrow">↓ 극복된 상태로 뒤집기</div>
+        <label>중간목표 (Intermediate Objective)</label>
+        <textarea data-bind="io|${it.id}" rows="2" placeholder="예: 8회기 표준 커리큘럼과 운영 매뉴얼이 완성되어 있다.">${esc(it.io)}</textarea>
+        ${fb? `<div class="fb ${fb.isValid?"ok":"bad"}" style="margin-left:0"><b>${fb.isValid?"✓ AI":"! AI"}</b> ${esc(fb.feedback)}</div>`:""}
+        ${map? `<div class="ai-sug-row" style="margin-top:6px"><span>✦ ${esc(map)}</span><button data-id="${it.id}">적용</button></div>`:""}
+        <div class="check">점검 — 이 상태가 되면 위 장애물은 정말 사라집니까?</div>`;
+      const applyBtn = box.querySelector(".ai-sug-row button");
+      if(applyBtn) applyBtn.onclick = ()=>{
+        const t = aiFb.ioMaps[it.id];
+        delete aiFb.ioMaps[it.id];
+        box.querySelector("textarea").value = t;   /* draw()의 commit이 이 값을 읽도록 DOM에 먼저 반영 */
+        draw();
+      };
+      list.appendChild(box);
+    });
+  }
+  draw();
+  panel.querySelector("#aiIO").onclick = ()=>{
+    commitStepInputs();
+    ensureAI(async ()=>{
+      const btn = panel.querySelector("#aiIO");
+      btn.disabled = true; btn.innerHTML = `<span class="spin" style="border-color:rgba(26,122,92,.3);border-top-color:var(--green-700)"></span> AI 분석 중…`;
+      try{
+        const r = await aiIOReview();
+        (r.feedbacks||[]).forEach(f=>{ aiFb.ios[f.id] = f; });
+        (r.mappings||[]).forEach(m=>{ const it=findItem(m.id); if(it && !it.io.trim()) aiFb.ioMaps[m.id] = m.io; });
+        draw();
+      }catch(e){ toast(e.message||"AI 호출에 실패했습니다"); }
+      finally{ btn.disabled = false; btn.innerHTML = "✦ AI로 변환 제안 · 작성한 IO 검토"; }
+    });
+  };
+  guide.innerHTML = `
+    <h3>◈ 방법론 가이드</h3>
+    <ul>
+      <li><b>상태로, 완료형으로</b> — “만든다”가 아니라 “완성되어 있다”. 달성 여부를 판별할 수 있는 문장으로.</li>
+      <li><b>장애물과 1:1 대응</b> — 각 중간목표는 자기 장애물을 정확히 무력화해야 합니다(충분성).</li>
+      <li><b>방법은 아직 묻지 않기</b> — ‘어떻게’는 나무가 완성된 뒤의 일입니다. 여기서는 ‘무엇이 되어 있어야 하는가’만.</li>
+    </ul>
+    <div class="q">점검 질문 — “이 중간목표가 달성되면, 해당 장애물은 더 이상 나를 막지 못하는가?”</div>
+    <div class="ex"><b>예시</b><br>장애물: 기업 고객을 만날 접점이 없다.<br>→ IO: HR 담당자 대상 무료 설명회 채널이 운영되고 있다.</div>`;
+  navButtons(panel, {backTo:2, nextTo:4, canNext(){
+    if(!state.items.every(it=>it.io.trim())){ toast("모든 장애물에 중간목표를 적어 주세요"); return false; }
+    return true;
+  }});
+}
+
+/* ---- STEP 4 : sequencing ---- */
+function step4(panel, guide){
+  panel.innerHTML = `
+    <h2>4단계 · 중간목표 순서 배열</h2>
+    <p class="sub">달성해야 하는 순서대로 배열합니다. <b>맨 위가 가장 먼저(1단)</b>, 아래로 갈수록 나중입니다. 동시에 진행할 수 있는 중간목표는 같은 단으로 묶습니다.</p>
+    <div class="seq-help">의존 관계 질문 — “이 중간목표를 달성하려면, 그 전에 반드시 달성돼 있어야 하는 중간목표는 무엇인가?”</div>
+    <div class="seq-list" id="seqList"></div>
+    <button class="coach-btn no-print" id="aiSeq">✦ AI 순서 제안 · 현재 순서 평가</button>
+    <div id="seqAI"></div>`;
+  const listEl = panel.querySelector("#seqList");
+  let dragId = null;
+
+  function drawSeqAI(){
+    const box = panel.querySelector("#seqAI");
+    box.innerHTML = "";
+    const r = aiFb.seq;
+    if(!r) return;
+    box.innerHTML = `<div class="ai-overall" style="margin-top:12px">
+      ${typeof r.score==="number"? `<span class="ai-score">현재 순서 ${r.score}/10</span> `:""}
+      <b>AI 조언</b> — ${esc(r.advice||"")}
+      ${r.levels? `<div style="margin-top:8px">${r.levels.map((g,i)=>`<b>${i+1}단</b>: ${g.map(id=>{const it=findItem(id);return it?esc(it.io):"";}).filter(Boolean).join(" ∥ ")}`).join("<br>")}
+      <button class="btn primary" id="applySeq" style="margin-top:10px;padding:7px 14px;font-size:13px">이 순서 적용</button></div>`:""}
+    </div>`;
+    const ap = box.querySelector("#applySeq");
+    if(ap) ap.onclick = ()=>{
+      const ordered = [];
+      r.levels.forEach(g=>{
+        g.forEach((id,j)=>{
+          const it = findItem(id);
+          if(it && !ordered.includes(it)){ it.parallel = j>0; ordered.push(it); }
+        });
+      });
+      state.items.forEach(it=>{ if(!ordered.includes(it)){ it.parallel=false; ordered.push(it); } });
+      state.items = ordered;
+      if(state.items[0]) state.items[0].parallel = false;
+      aiFb.seq.levels = null;
+      draw(); drawSeqAI();
+      toast("AI 제안 순서를 적용했습니다");
+    };
+  }
+  panel.querySelector("#aiSeq").onclick = ()=>{
+    ensureAI(async ()=>{
+      const btn = panel.querySelector("#aiSeq");
+      btn.disabled = true; btn.innerHTML = `<span class="spin" style="border-color:rgba(26,122,92,.3);border-top-color:var(--green-700)"></span> AI 분석 중…`;
+      try{ aiFb.seq = await aiSequenceReview(); drawSeqAI(); }
+      catch(e){ toast(e.message||"AI 호출에 실패했습니다"); }
+      finally{ btn.disabled = false; btn.innerHTML = "✦ AI 순서 제안 · 현재 순서 평가"; }
+    });
+  };
+  drawSeqAI();
+
+  function draw(){
+    listEl.innerHTML = "";
+    const lv = levels();
+    let li = 0;
+    state.items.forEach((it,i)=>{
+      const isNewLevel = (i===0 || !it.parallel);
+      if(isNewLevel && i>0) li++;
+      const row = document.createElement("div");
+      row.className = "seq-item";
+      row.draggable = true;
+      row.innerHTML = `
+        <div class="lv">${li+1}단</div>
+        <div class="txt">${esc(it.io)}<small>장애물: ${esc(it.obstacle)}</small></div>
+        <button class="par ${it.parallel?"on":""}" ${i===0?"disabled":""} title="바로 위 항목과 같은 단(동시 진행)으로 묶기">${it.parallel?"∥ 동시 진행":"∥ 동시로"}</button>
+        <div class="mv">
+          <button data-d="-1" ${i===0?"disabled":""}>▲</button>
+          <button data-d="1" ${i===state.items.length-1?"disabled":""}>▼</button>
+        </div>`;
+      row.querySelector(".par").onclick = ()=>{ it.parallel = !it.parallel; draw(); };
+      row.querySelectorAll(".mv button").forEach(b=>b.onclick = ()=>{
+        const d = +b.dataset.d, j = i+d;
+        [state.items[i], state.items[j]] = [state.items[j], state.items[i]];
+        state.items[0].parallel = false;
+        draw();
+      });
+      row.addEventListener("dragstart", ()=>{ dragId = it.id; row.classList.add("dragging"); });
+      row.addEventListener("dragend", ()=>{ dragId = null; draw(); });
+      row.addEventListener("dragover", e=>e.preventDefault());
+      row.addEventListener("drop", e=>{
+        e.preventDefault();
+        if(!dragId || dragId===it.id) return;
+        const from = state.items.findIndex(x=>x.id===dragId);
+        const moved = state.items.splice(from,1)[0];
+        const to = state.items.findIndex(x=>x.id===it.id);
+        state.items.splice(to,0,moved);
+        state.items[0].parallel = false;
+        draw();
+      });
+      listEl.appendChild(row);
+    });
+  }
+  draw();
+
+  guide.innerHTML = `
+    <h3>◈ 방법론 가이드</h3>
+    <ul>
+      <li><b>시간·논리 순서</b> — 먼저 갖춰져야 다음이 가능한 것부터. 인과가 아니라 <b>선행 조건</b> 관계입니다.</li>
+      <li><b>같은 단 = 동시 진행</b> — 서로 선후가 없는 중간목표는 “∥ 동시로”를 눌러 같은 단에 둡니다.</li>
+      <li><b>드래그 또는 ▲▼</b>로 순서를 바꿉니다.</li>
+    </ul>
+    <div class="q">점검 질문 — “아래 단을 건너뛰고 이 단을 먼저 달성할 수 있는가? 있다면 순서를 다시 보세요.”</div>
+    <div class="ex"><b>왜 순서가 중요한가?</b><br>순서가 잡히면 나무는 곧바로 실행 로드맵이 됩니다. ‘지금 무엇부터 할지’가 저절로 드러납니다.</div>`;
+  navButtons(panel, {backTo:3, nextTo:5, nextLabel:"다음: 실행계획 →"});
+}
+
+/* ---- STEP 5 : action plan ---- */
+function stepActions(panel, guide){
+  panel.innerHTML = `
+    <h2>5단계 · 실행계획 수립</h2>
+    <p class="sub">각 중간목표를 달성하기 위해 <b>무엇을(task) · 누가(who) · 언제(when)</b> 할지 적습니다. 1단(가장 먼저)부터 채워 보세요. 지금 당장은 1~2단만 구체적이어도 충분합니다.</p>
+    <div id="apList"></div>`;
+  const list = panel.querySelector("#apList");
+  function draw(){
+    commitStepInputs();
+    list.innerHTML = "";
+    const lv = levels();
+    lv.forEach((group,li)=>{
+      group.forEach(it=>{
+        const box = document.createElement("div");
+        box.className = "ap-io";
+        box.innerHTML = `
+          <div class="ap-head"><span class="lv">${li+1}단</span><span class="io">${esc(it.io)}</span></div>
+          ${it.actions.length? "":`<div class="ap-hint">아직 활동이 없습니다. 직접 추가하거나 AI 제안을 받아 보세요.</div>`}
+          <div class="ap-rows"></div>
+          <div class="ap-add">
+            <button data-a="add">＋ 활동 추가</button>
+            <button data-a="ai">✦ AI 활동 3개 제안</button>
+          </div>`;
+        const rows = box.querySelector(".ap-rows");
+        it.actions.forEach(a=>{
+          const row = document.createElement("div");
+          row.className = "ap-row";
+          row.innerHTML = `
+            <input type="text" data-bind="task|${it.id}|${a.id}" value="${esc(a.task)}" placeholder="무엇을 하는가">
+            <input type="text" data-bind="who|${it.id}|${a.id}" value="${esc(a.who)}" placeholder="누가">
+            <input type="text" data-bind="when|${it.id}|${a.id}" value="${esc(a.when)}" placeholder="언제까지">
+            <button class="del" title="삭제">✕</button>`;
+          row.querySelector(".del").onclick = ()=>{
+            commitStepInputs();
+            it.actions = it.actions.filter(x=>x.id!==a.id);
+            draw();
+          };
+          rows.appendChild(row);
+        });
+        box.querySelector('[data-a="add"]').onclick = ()=>{
+          commitStepInputs();
+          it.actions.push({id:uid(), task:"", who:"", when:""});
+          draw();
+        };
+        box.querySelector('[data-a="ai"]').onclick = ()=>{
+          commitStepInputs();
+          ensureAI(async ()=>{
+            const b = box.querySelector('[data-a="ai"]');
+            b.disabled = true; b.textContent = "생성 중…";
+            try{
+              const acts = await aiActionPlan(it.io);
+              acts.slice(0,3).forEach(t=>it.actions.push({id:uid(), task:t, who:"", when:""}));
+              draw();
+            }catch(e){ toast(e.message||"AI 호출에 실패했습니다"); b.disabled=false; b.textContent="✦ AI 활동 3개 제안"; }
+          });
+        };
+        list.appendChild(box);
+      });
+    });
+  }
+  draw();
+  guide.innerHTML = `
+    <h3>◈ 방법론 가이드</h3>
+    <ul>
+      <li><b>IO는 상태, 활동은 행동</b> — 나무의 중간목표는 '도달할 상태'이고, 실행계획은 그 상태를 만드는 '구체적 행동'입니다. 여기서 비로소 '어떻게'를 다룹니다.</li>
+      <li><b>1단부터</b> — 지금 시작할 수 있는 아래 단의 활동이 가장 구체적이어야 합니다. 위 단은 대략적이어도 됩니다.</li>
+      <li><b>담당과 기한</b> — '누가·언제'가 없는 활동은 실행되지 않습니다. 팀 워크숍이라면 반드시 담당자를 정하세요.</li>
+    </ul>
+    <div class="q">점검 질문 — "이 활동들을 다 하면, 이 중간목표 상태에 실제로 도달하는가?"</div>`;
+  navButtons(panel, {backTo:4, nextTo:6, nextLabel:"다음: 검토 →"});
+}
+
+/* ---- STEP 6 : review ---- */
+function stepReview(panel, guide){
+  panel.innerHTML = `<h2>6단계 · 아래에서 위로 검토</h2>
+    <p class="sub">나무를 소리 내어 읽으며 논리를 점검합니다. “1단이 달성되면 → 2단을 달성할 수 있고 → … → 마침내 야심찬 목표에 도달한다.”</p>
+    <div id="treeMini"></div>`;
+  renderTree(panel.querySelector("#treeMini"), {editable:false});
+
+  const checks = [
+    ["c1","목표는 달성된 상태로, 판별 가능하게 서술되어 있다."],
+    ["c2","각 중간목표를 달성하면 해당 장애물이 실제로 극복된다. (충분성)"],
+    ["c3","아래 단부터 차례로 읽었을 때 논리가 자연스럽게 이어진다."],
+    ["c4","빠진 장애물이 없다. — “이것만 다 되면 정말 목표에 도달하는가?”"],
+    ["c5","각 단의 순서를 바꾸거나 건너뛸 수 없다. (선후 관계 확인)"],
+    ["c6","1단(가장 먼저)의 중간목표에는 지금 시작할 수 있는 실행계획이 붙어 있다."]
+  ];
+  const cl = document.createElement("div");
+  cl.className = "checklist no-print";
+  cl.innerHTML = "<h3 style='font-size:14px;color:var(--green-700);margin:18px 0 4px'>완성 전 점검 (TOC 논리 검토)</h3>" +
+    checks.map(([k,t])=>`<label><input type="checkbox" data-k="${k}" ${checkboxes[k]?"checked":""}> ${t}</label>`).join("");
+  cl.querySelectorAll("input").forEach(c=>c.onchange=()=>{ checkboxes[c.dataset.k]=c.checked; });
+  panel.appendChild(cl);
+
+  guide.innerHTML = `
+    <h3>◈ 방법론 가이드</h3>
+    <ul>
+      <li><b>아래에서 위로 읽기</b> — 화살표 방향은 “달성하면 가능해진다”는 뜻입니다.</li>
+      <li><b>어색한 곳이 이상 신호</b> — 읽다가 막히면 그 지점의 중간목표가 부족하거나 순서가 틀린 것입니다. 해당 단계로 돌아가 고치세요.</li>
+      <li><b>완성 후</b> — ‘목표나무’ 탭에서 달성 체크로 진행을 관리하고, 저장·인쇄로 팀과 공유하세요.</li>
+    </ul>
+    <div class="q">최종 질문 — “이 나무의 1단부터 시작하면, 나는 정말 이 목표에 도달하는가?”</div>`;
+  navButtons(panel, {backTo:5, nextLabel:"목표나무 열기 🌳", onNext(){
+    const missed = checks.filter(([k])=>!checkboxes[k]).length;
+    if(missed && !confirm("아직 확인하지 않은 점검 항목이 " + missed + "개 있습니다.\n그래도 나무를 완성할까요?")) return;
+    view = "tree"; render(); window.scrollTo(0,0);
+  }});
+}
+
+/* ================= tree ================= */
+function renderTree(container, {editable}){
+  container.innerHTML = "";
+  if(!state.target.trim() && !state.items.length){
+    container.innerHTML = `<div class="empty"><div class="big">🌱</div>아직 목표나무가 없습니다.<br>마법사에서 야심찬 목표부터 세워 보세요.<br><button class="btn primary" onclick="view='wizard';step=1;render()">마법사 시작하기</button></div>`;
+    return;
+  }
+  const lv = levels();
+  const total = state.items.length;
+  const done = state.items.filter(i=>i.done).length;
+
+  if(editable && total){
+    const p = document.createElement("div");
+    p.className = "progress-line no-print";
+    p.innerHTML = `<small>중간목표 달성 ${done} / ${total}</small><div class="bar"><i style="width:${total?Math.round(done/total*100):0}%"></i></div>`;
+    container.appendChild(p);
+  }
+
+  const tree = document.createElement("div");
+  tree.className = "tree";
+
+  const goal = document.createElement("div");
+  goal.className = "goal-node";
+  goal.innerHTML = `<div class="tag">AMBITIOUS TARGET · 야심찬 목표</div>
+    <div class="txt">${esc(state.target)||"<i>목표 미입력</i>"}</div>
+    ${state.deadline?`<div class="by">⏱ ${esc(state.deadline)}</div>`:""}`;
+  tree.appendChild(goal);
+
+  const arrow = ()=>{
+    const a = document.createElement("div");
+    a.className = "tree-arrow";
+    a.innerHTML = `<svg width="26" height="30" viewBox="0 0 26 30"><path d="M13 28 V6 M5 13 L13 4 L21 13" stroke="currentColor" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+    return a;
+  };
+
+  /* levels rendered top(=last) → bottom(=first) */
+  for(let i=lv.length-1; i>=0; i--){
+    tree.appendChild(arrow());
+    const level = document.createElement("div");
+    level.className = "level";
+    level.innerHTML = `<div class="level-label">${LEVEL_NAMES(i)}${i===0?" · 여기서 시작":""}</div>`;
+    const cards = document.createElement("div");
+    cards.className = "level-cards";
+    lv[i].forEach(it=>{
+      const c = document.createElement("div");
+      c.className = "io-card" + (it.done?" done":"");
+      c.innerHTML = `
+        <div class="io-txt">${esc(it.io)||"<i>중간목표 미입력</i>"}</div>
+        <div class="ob-txt"><b>극복할 장애물</b><br>${esc(it.obstacle)}</div>
+        <div class="card-foot">
+          <label class="done-toggle"><input type="checkbox" ${it.done?"checked":""} ${editable?"":"disabled"}> 달성</label>
+          ${editable?`<button class="edit-link">편집</button>`:""}
+        </div>`;
+      const cb = c.querySelector("input");
+      cb.onchange = ()=>{ it.done = cb.checked; render(); };
+      if(editable) c.querySelector(".edit-link").onclick = ()=>openEditModal(it.id);
+      cards.appendChild(c);
+    });
+    level.appendChild(cards);
+    tree.appendChild(level);
+  }
+  container.appendChild(tree);
+}
+
+function renderTreeView(app){
+  const wrap = document.createElement("div");
+  wrap.className = "tree-wrap";
+  const board = document.createElement("section");
+  board.className = "tree-board";
+  board.innerHTML = `<div class="tree-title">${esc(state.title)||"야심찬 목표나무"}</div>`;
+  renderTree(board, {editable:true});
+  const addWrap = document.createElement("div");
+  addWrap.className = "no-print";
+  addWrap.style.textAlign = "center";
+  addWrap.style.marginTop = "20px";
+  if(state.items.length){
+    addWrap.innerHTML = `<button class="btn ghost">＋ 중간목표 추가</button>`;
+    addWrap.querySelector("button").onclick = ()=>{
+      const it = newItem();
+      state.items.push(it);
+      openEditModal(it.id, true);
+    };
+  }
+  board.appendChild(addWrap);
+
+  /* 실행 마스터플랜 표 */
+  if(state.items.length){
+    const lv = levels();
+    const mp = document.createElement("div");
+    mp.className = "mp-wrap";
+    let rows = "";
+    lv.forEach((group,li)=>{
+      group.forEach(it=>{
+        if(it.actions.length){
+          it.actions.forEach((a,ai2)=>{
+            rows += `<tr>${ai2===0? `<td class="lv" rowspan="${it.actions.length}">${li+1}단</td><td class="io" rowspan="${it.actions.length}">${esc(it.io)}</td>`:""}
+              <td>${esc(a.task)}</td><td class="meta">${esc(a.who)||"—"}</td><td class="meta">${esc(a.when)||"—"}</td></tr>`;
+          });
+        }else{
+          rows += `<tr class="empty"><td class="lv">${li+1}단</td><td class="io">${esc(it.io)}</td><td>실행계획 미작성</td><td class="meta">—</td><td class="meta">—</td></tr>`;
+        }
+      });
+    });
+    mp.innerHTML = `<h3>실행 마스터플랜 (Action Plan)</h3>
+      <table class="mp-table"><thead><tr><th>단</th><th>중간목표 (IO)</th><th>활동 (무엇을)</th><th>누가</th><th>언제까지</th></tr></thead>
+      <tbody>${rows}</tbody></table>`;
+    board.appendChild(mp);
+  }
+
+  const side = document.createElement("aside");
+  side.className = "side-panel";
+
+  /* bottom-up read-aloud */
+  const lv = levels();
+  if(lv.length){
+    const ro = document.createElement("div");
+    ro.className = "readout";
+    ro.innerHTML = "<h3>◈ 아래에서 위로 읽기</h3><ol>" +
+      lv.map((g,i)=>`<li><b>${LEVEL_NAMES(i)}</b> — ${g.map(x=>esc(x.io)).join(" 그리고 ")}${i<lv.length-1?" → 그러면 다음 단으로 갈 수 있다":""}</li>`).join("") +
+      `</ol><div class="final">→ 마침내, “${esc(state.target)}”</div>`;
+    side.appendChild(ro);
+  }
+  const tip = document.createElement("div");
+  tip.className = "readout";
+  tip.innerHTML = `<h3>◈ 활용 팁</h3><ul style="padding-left:18px;display:flex;flex-direction:column;gap:7px;color:#2c443b">
+    <li>1단부터 실행하고, 달성한 중간목표에 <b>달성</b> 체크를 하세요.</li>
+    <li>실행 중 새 장애물이 나타나면 <b>＋ 중간목표 추가</b>로 나무를 키우세요. 나무는 살아있는 문서입니다.</li>
+    <li><b>저장</b>으로 파일을 보관하고, <b>인쇄</b>로 팀과 공유하세요.</li>
+    <li>수정이 필요하면 카드의 <b>편집</b> 또는 마법사 탭으로 돌아가세요.</li></ul>`;
+  side.appendChild(tip);
+
+  wrap.append(board, side);
+  app.appendChild(wrap);
+}
+
+/* ---- edit modal ---- */
+function openEditModal(id, isNew){
+  const it = findItem(id);
+  if(!it) return;
+  const idx = state.items.indexOf(it);
+  const bg = document.createElement("div");
+  bg.className = "modal-bg";
+  bg.innerHTML = `<div class="modal">
+    <h3>${isNew?"중간목표 추가":"중간목표 편집"}</h3>
+    <div class="field"><label>중간목표 (달성된 상태로 서술)</label><textarea id="mIo" rows="2">${esc(it.io)}</textarea></div>
+    <div class="field"><label>이 중간목표가 극복하는 장애물</label><textarea id="mOb" rows="2">${esc(it.obstacle)}</textarea></div>
+    <div class="field"><label>위치</label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn ghost" id="mUp" ${idx===0?"disabled":""}>▲ 한 칸 먼저</button>
+        <button class="btn ghost" id="mDown" ${idx===state.items.length-1?"disabled":""}>▼ 한 칸 나중</button>
+        <button class="btn ghost" id="mPar" ${idx===0?"disabled":""}>${it.parallel?"∥ 동시 진행 해제":"∥ 위 항목과 동시 진행"}</button>
+      </div></div>
+    <div class="nav">
+      <button class="btn ghost danger" id="mDel">삭제</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn ghost" id="mCancel">취소</button>
+        <button class="btn primary" id="mOk">확인</button>
+      </div></div></div>`;
+  document.body.appendChild(bg);
+  const q = s=>bg.querySelector(s);
+  const commit = ()=>{ it.io = q("#mIo").value; it.obstacle = q("#mOb").value; };
+  const close = ()=>{ bg.remove(); render(); };
+  q("#mUp").onclick = ()=>{ commit(); const j=idx-1; [state.items[idx],state.items[j]]=[state.items[j],state.items[idx]]; state.items[0].parallel=false; close(); openEditModal(id); };
+  q("#mDown").onclick = ()=>{ commit(); const j=idx+1; [state.items[idx],state.items[j]]=[state.items[j],state.items[idx]]; state.items[0].parallel=false; close(); openEditModal(id); };
+  q("#mPar").onclick = ()=>{ commit(); it.parallel=!it.parallel; close(); openEditModal(id); };
+  q("#mDel").onclick = ()=>{
+    if(!isNew && !confirm("이 중간목표를 삭제할까요?")) return;
+    state.items = state.items.filter(x=>x.id!==id);
+    if(state.items[0]) state.items[0].parallel=false;
+    close();
+  };
+  q("#mCancel").onclick = ()=>{ if(isNew){ state.items = state.items.filter(x=>x.id!==id); } close(); };
+  q("#mOk").onclick = ()=>{
+    commit();
+    if(!it.io.trim()){ toast("중간목표를 입력해 주세요"); return; }
+    close();
+  };
+  bg.onclick = e=>{ if(e.target===bg) q("#mCancel").click(); };
+  q("#mIo").focus();
+}
+
+/* ================= target coach (진단 + 수정안) ================= */
+const ai = { key:"", model:"claude-sonnet-4-5" };   /* 세션 메모리에만 보관 — 어디에도 저장되지 않음 */
+
+function analyzeTarget(target, deadline){
+  const t = (target||"").trim();
+  const all = t + " " + (deadline||"");
+  const hasDeadline = /(까지|이내|안에|내에)/.test(all) || /\d+\s*(년|개월|월|주|일)/.test(all);
+  const hasNumber = /\d/.test(t) || /(한|두|세|네|다섯|여섯|일곱|여덟|아홉|열)\s*(명|곳|개|건|회|배|팀|호|권)/.test(t);
+  const vague = t.match(/노력|최선|열심히|향상|개선|강화|활성화|극대화|확대|성장(?!률)|잘\s|많이|꾸준히/g);
+  const wish = /(싶다|바란다|희망한다|되었으면|해야\s?한다)\.?$/.test(t);
+  const sentences = t.split(/[.!?]/).map(s=>s.trim()).filter(s=>s.length>3);
+  const multi = sentences.length > 1 || /(그리고|하는 동시에|함과 동시에|및)/.test(t) && t.length > 40;
+  return [
+    {ok: hasDeadline, label:"기한이 있다",
+     tip: hasDeadline? "달성 시점이 드러나 있습니다." : "‘언제까지’가 없으면 달성 여부를 영영 판정할 수 없습니다. 시점을 못 박으세요."},
+    {ok: hasNumber, label:"판별 가능한 지표가 있다",
+     tip: hasNumber? "숫자·지표가 있어 달성 여부를 판정할 수 있습니다." : "숫자가 하나도 없습니다. ‘무엇이 얼마나’ 되면 달성인지 지표를 넣으세요."},
+    {ok: !(vague||wish), label:"달성된 상태로 서술되어 있다",
+     tip: (vague||wish)? ("‘" + (vague? vague[0] : "…"+t.slice(-6)) + "’ — 활동·바람의 언어입니다. 도달한 결과 상태로 바꿔 쓰세요. (“노력한다” ✕ → “확보한다” ○)")
+                        : "결과 상태의 언어로 서술되어 있습니다."},
+    {ok: !multi, label:"목표가 하나다",
+     tip: multi? "목표가 여러 개로 읽힙니다. 나무 하나에는 목표 하나 — 가장 중요한 것 하나로 좁히세요." : "하나의 결과에 집중되어 있습니다."},
+    {ok: null, label:"야심찬가? (직접 점검)",
+     tip:"지금의 방식 그대로면 어렵게 느껴지는가? 장애물이 여럿 떠오르는가? — ‘예’라면 좋은 목표입니다."}
+  ];
+}
+
+function offlineSuggestions(target, deadline){
+  const stem = (target||"").trim().replace(/[.!?…\s]+$/,"");
+  const diag = analyzeTarget(target, deadline);
+  const needDl = !diag[0].ok, needNum = !diag[1].ok;
+  const addDl = needDl? " (기한: ◻년 ◻월까지)" : "";
+  const addNum = needNum? " — 성공 지표: ◻(무엇)이 ◻(얼마나)" : "";
+  return [
+    {text: stem + addDl + addNum + ".",
+     why: (needDl||needNum)? "원문을 유지하면서 빠진 요소(기한·지표)를 빈칸(◻)으로 추가한 안입니다. 빈칸을 채워 완성하세요."
+                           : "원문에 판정 기준을 덧붙인 안입니다. 빈칸을 채워 완성하세요."},
+    {text: "◻년 ◻월의 모습: " + stem + ". 그 증거로 ◻(구체적 결과물·지표)가 실제로 존재한다.",
+     why: "‘이미 달성된 미래의 하루’를 묘사하는 완료 상태 문형입니다. 증거를 명시하면 활동이 아닌 상태가 됩니다."},
+    {text: stem + " — ◻(지표)가 ◻(기준값) 이상이면 달성한 것으로 본다.",
+     why: "마감일에 누구나 예/아니오로 답할 수 있게 판정 규칙을 문장에 포함한 안입니다."}
+  ];
+}
+
+const AI_SYS = "당신은 TOC(제약이론) 사고 프로세스의 야심찬 목표나무(Ambitious Target Tree) 전문 코치다. 성인·조직 워크숍 톤의 자연스러운 한국어를 쓴다. 반드시 유효한 JSON만 출력한다 — 설명 문장이나 코드펜스를 붙이지 않는다.";
+
+async function claudeCall(usr, maxTokens){
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method:"POST",
+    headers:{
+      "content-type":"application/json",
+      "x-api-key": ai.key,
+      "anthropic-version":"2023-06-01",
+      "anthropic-dangerous-direct-browser-access":"true"
+    },
+    body: JSON.stringify({ model: ai.model, max_tokens: maxTokens||1500, system: AI_SYS, messages:[{role:"user", content:usr}] })
+  });
+  if(!res.ok){
+    const msg = res.status===401? "API 키가 올바르지 않습니다." :
+                res.status===429? "요청 한도를 초과했습니다. 잠시 후 다시 시도하세요." :
+                "API 오류 (" + res.status + ")";
+    throw new Error(msg);
+  }
+  const data = await res.json();
+  const raw = (data.content||[]).map(c=>c.text||"").join("");
+  const m = raw.match(/\{[\s\S]*\}/);
+  if(!m) throw new Error("응답을 해석하지 못했습니다. 다시 시도해 주세요.");
+  return JSON.parse(m[0]);
+}
+
+/* AI 연결 설정 모달 — 키가 있으면 즉시 실행 */
+function ensureAI(run){
+  if(ai.key) return run();
+  openAISettings(run);
+}
+function openAISettings(run){
+  const bg = document.createElement("div");
+  bg.className = "modal-bg";
+  bg.innerHTML = `<div class="modal">
+    <h3>✦ AI 연결 (Claude API)</h3>
+    <div class="ai-box" style="border:none;padding:0;margin:0"><div class="inner" style="margin:0">
+      <input type="password" id="kIn" placeholder="Claude API 키 (sk-ant-…)" autocomplete="off" value="">
+      <div class="note" style="font-size:12.5px">연결하면 각 단계의 <b>✦ AI 버튼</b>(목표 수정안, 장애물 검토·제안, IO 변환·검토, 순서 제안·평가, 활동 제안)이 활성화됩니다. 연결 없이도 모든 단계는 수동으로 사용할 수 있습니다.</div>
+      <div class="note">키는 이 화면의 메모리에서만 쓰이고 <b>어디에도 저장되지 않습니다</b> (Anthropic API 호출에만 사용). 호출마다 소액의 API 비용이 발생합니다. 키 발급: console.anthropic.com</div>
+      <div id="kErr"></div>
+    </div></div>
+    <div class="nav">
+      <button class="btn ghost" id="kCancel">취소</button>
+      <button class="btn primary" id="kOk">연결</button>
+    </div></div>`;
+  document.body.appendChild(bg);
+  const q = s=>bg.querySelector(s);
+  if(ai.key) q("#kIn").value = ai.key;
+  q("#kOk").onclick = ()=>{
+    const k = q("#kIn").value.trim();
+    if(!k){ q("#kErr").innerHTML = `<div class="ai-err">API 키를 입력해 주세요.</div>`; return; }
+    ai.key = k; bg.remove();
+    if(run) run();
+  };
+  q("#kCancel").onclick = ()=>bg.remove();
+  bg.onclick = e=>{ if(e.target===bg) bg.remove(); };
+  q("#kIn").focus();
+}
+
+/* 세션 한정 AI 결과 (파일에는 저장하지 않음) */
+const aiFb = { obstacles:{}, ios:{}, obstacleOverall:"", obstacleSugs:[], seq:null, excluded:[] };
+
+async function aiObstacleReview(){
+  return claudeCall(`야심찬 목표와 사용자가 작성한 장애물 목록을 검토하고, 추가 장애물을 제안하라.
+
+목표: "${state.target}"
+작성된 장애물: ${JSON.stringify(state.items.map(it=>({id:it.id, text:it.obstacle})))}
+
+[검토 기준]
+- 장애물은 해결책("~해야 한다")이 아니라 지금 실재하는 '부정적 상태'("~이 없다/부족하다")로 서술되어야 한다.
+- 모호하지 않고 구체적이어야 하며, 실제로 목표 달성을 가로막아야 한다.
+- 각 장애물 id별로 검토 의견 1문장과 isValid(기준 충족 여부)를 평가하라.
+
+[추가 제안 기준]
+- 목표 달성을 위해 추가로 극복해야 할 현실적 장애물 3~4개를 제안하라.
+- 기존 장애물 및 다음 제외 목록과 겹치면 안 된다: ${JSON.stringify(aiFb.excluded)}
+- "~다"로 끝나는 완결된 부정적 상태 문장으로 쓸 것.
+
+JSON 형식: {"overall":"전체 총평 1~2문장","feedbacks":[{"id":"...","feedback":"...","isValid":true}],"suggestions":["...","..."]}`);
+}
+
+async function aiIOReview(){
+  return claudeCall(`장애물을 중간목표(IO)로 전환·검토하라. IO는 장애물이 극복된 뒤의 '긍정적 결과 상태'를 "~되어 있다/~한다" 완료형으로 서술해야 하며, 행동(Action)이 아니라 상태(Condition)여야 한다.
+
+목표: "${state.target}"
+목록: ${JSON.stringify(state.items.map(it=>({id:it.id, obstacle:it.obstacle, io:it.io})))}
+
+- io가 비어 있는 항목: 장애물을 정확히 무력화하는 IO 문장을 새로 제안하라 (mappings에 포함).
+- io가 작성된 항목: 기준 충족 여부를 검토하라 (feedbacks에 포함, isValid는 상태 서술·완료형·장애물 1:1 대응이 지켜졌으면 true).
+
+JSON 형식: {"mappings":[{"id":"...","io":"제안 문장"}],"feedbacks":[{"id":"...","feedback":"1문장","isValid":true}]}`);
+}
+
+async function aiSequenceReview(){
+  return claudeCall(`중간목표(IO)들의 달성 순서를 제안하고 평가하라. 아래 나무는 선형 단(level) 구조다: 1단이 가장 먼저, 같은 단의 IO는 동시 진행이다.
+
+목표: "${state.target}"
+IO 목록(현재 순서): ${JSON.stringify(state.items.map(it=>({id:it.id, io:it.io})))}
+
+[규칙]
+- "A가 먼저 갖춰져야 B가 가능하다"는 선행 조건 관계로 판단하라.
+- 서로 선후가 없는 IO는 같은 단에 묶어라.
+- 모든 id를 정확히 한 번씩 사용하라.
+
+JSON 형식: {"levels":[["id","id"],["id"]], "advice":"순서에 대한 조언 1~2문장", "score":8}
+levels는 1단부터 순서대로, score는 현재 사용자 순서의 완성도(10점 만점).`);
+}
+
+async function aiActionPlan(ioText){
+  const r = await claudeCall(`중간목표: "${ioText}" 달성을 위한 구체적인 활동(Action Item) 3개를 제안하라. "무엇을 하는가"에 집중한 짧은 행동 문장으로 쓸 것.
+
+JSON 형식: {"actions":["...","...","..."]}`, 800);
+  return r.actions||[];
+}
+
+async function aiSuggest(target, deadline){
+  const usr = `다음 목표를 ATT 방법론 기준으로 다듬은 수정안 3개를 제안하라.
+
+현재 목표: "${target}"
+목표 시점: "${deadline || "미입력"}"
+
+기준:
+1. 활동이 아니라 이미 달성된 결과 상태로 서술
+2. 기한과 판별 가능한 지표(숫자) 포함 — 사용자가 안 준 수치는 그럴듯하게 지어내되 자연스러운 예시값으로
+3. 목표는 하나의 결과에 집중
+4. 야심적이되 사용자의 원래 의도와 도메인 어휘를 그대로 유지 — 내용을 바꾸지 말고 표현을 다듬을 것
+5. 세 안은 서로 관점이 달라야 함 (예: 지표 강화형 / 완료 상태 묘사형 / 범위를 좁혀 날카롭게 한 형)
+
+출력 형식(JSON만): {"suggestions":[{"text":"수정안 문장","why":"이렇게 고친 이유 한 문장"},…3개]}`;
+  const parsed = await claudeCall(usr, 1200);
+  if(!Array.isArray(parsed.suggestions) || !parsed.suggestions.length) throw new Error("수정안이 비어 있습니다. 다시 시도해 주세요.");
+  return parsed.suggestions.slice(0,3);
+}
+
+function openTargetCoach(){
+  const bg = document.createElement("div");
+  bg.className = "modal-bg";
+  const diag = analyzeTarget(state.target, state.deadline);
+  const okAll = diag.filter(d=>d.ok===false).length===0;
+  bg.innerHTML = `<div class="modal wide">
+    <h3>✦ 목표 점검 — “${esc(state.target.length>40? state.target.slice(0,40)+"…" : state.target)}”</h3>
+    <div class="diag">${diag.map(d=>`
+      <div class="diag-row ${d.ok===true?"ok":d.ok===false?"bad":"ask"}">
+        <span class="mark">${d.ok===true?"✓":d.ok===false?"!":"?"}</span>
+        <div><b>${d.label}</b><small>${d.tip}</small></div>
+      </div>`).join("")}
+    </div>
+    ${okAll? `<p class="sug-note">형식 기준은 통과했습니다. 아래 수정안은 표현을 더 다듬는 참고안입니다.</p>`:""}
+    <div class="sug-head">
+      <h4>수정안 3가지</h4>
+      <span class="src" id="sugSrc">문형 제안 (오프라인)</span>
+    </div>
+    <div id="sugErr"></div>
+    <div id="sugList"></div>
+    <p class="sug-note" id="sugNote">◻ 표시는 직접 채울 빈칸입니다. AI를 연결하면 목표에 맞춘 완성형 수정안을 받을 수 있습니다.</p>
+    <details class="ai-box" id="aiBox">
+      <summary>AI 연결 (Claude API) — 맞춤 수정안 받기</summary>
+      <div class="inner">
+        <input type="password" id="aiKey" placeholder="Claude API 키 (sk-ant-…)" autocomplete="off">
+        <div class="note">키는 이 화면의 메모리에서만 쓰이고 <b>어디에도 저장·전송되지 않습니다</b> (Anthropic API 호출에만 사용). 호출마다 소액의 API 비용이 발생합니다. 키 발급: console.anthropic.com</div>
+        <button class="ai-run" id="aiRun">✦ AI 수정안 생성</button>
+      </div>
+    </details>
+    <div class="nav"><span></span><button class="btn ghost" id="coachClose">닫기</button></div>
+  </div>`;
+  document.body.appendChild(bg);
+  const q = s=>bg.querySelector(s);
+
+  function drawSuggestions(list, isAI){
+    q("#sugSrc").textContent = isAI? "AI 수정안 (Claude)" : "문형 제안 (오프라인)";
+    q("#sugSrc").classList.toggle("ai", !!isAI);
+    q("#sugNote").style.display = isAI? "none":"";
+    q("#sugList").innerHTML = list.map((s,i)=>`
+      <div class="sug-card">
+        <div class="t">${esc(s.text)}</div>
+        <div class="w">${esc(s.why||"")}</div>
+        <button class="use" data-i="${i}">이 안 사용</button>
+      </div>`).join("");
+    q("#sugList").querySelectorAll(".use").forEach(b=>b.onclick = ()=>{
+      state.target = list[+b.dataset.i].text;
+      bg.remove(); render();
+      toast(isAI? "AI 수정안을 적용했습니다" : "문형을 적용했습니다 — ◻ 빈칸을 채워 완성하세요");
+      const ta = document.querySelector('textarea[data-bind="target|"]');
+      if(ta) ta.focus();
+    });
+  }
+  drawSuggestions(offlineSuggestions(state.target, state.deadline), false);
+
+  if(ai.key) q("#aiKey").value = ai.key;
+  q("#aiRun").onclick = async ()=>{
+    ai.key = q("#aiKey").value.trim();
+    q("#sugErr").innerHTML = "";
+    if(!ai.key){ q("#sugErr").innerHTML = `<div class="ai-err">API 키를 입력해 주세요.</div>`; return; }
+    const btn = q("#aiRun");
+    btn.disabled = true; btn.innerHTML = `<span class="spin"></span> 생성 중…`;
+    try{
+      const sugs = await aiSuggest(state.target, state.deadline);
+      drawSuggestions(sugs, true);
+      q("#aiBox").open = false;
+    }catch(e){
+      q("#sugErr").innerHTML = `<div class="ai-err">${esc(e.message||"오류가 발생했습니다.")} ${/Failed to fetch/i.test(e.message||"")? "네트워크 연결 또는 방화벽을 확인해 주세요.":""}</div>`;
+    }finally{
+      btn.disabled = false; btn.innerHTML = "✦ AI 수정안 생성";
+    }
+  };
+  q("#coachClose").onclick = ()=>bg.remove();
+  bg.onclick = e=>{ if(e.target===bg) bg.remove(); };
+}
+
+/* ================= export (PDF / PNG) ================= */
+function loadScript(src){
+  return new Promise((ok,no)=>{
+    if(document.querySelector(`script[src="${src}"]`)) return ok();
+    const s = document.createElement("script");
+    s.src = src; s.onload = ok; s.onerror = ()=>no(new Error("라이브러리를 불러오지 못했습니다. 인터넷 연결을 확인하거나 '인쇄'를 이용해 주세요."));
+    document.head.appendChild(s);
+  });
+}
+function withTreeView(cb){
+  commitStepInputs();
+  if(view!=="tree"){ view = "tree"; render(); }
+  setTimeout(cb, 120);
+}
+function exportName(){ return (state.title||"목표나무").replace(/[\\/:*?"<>|]/g,"_"); }
+
+async function exportPNG(){
+  await loadScript("https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js");
+  const el = document.querySelector(".tree-board");
+  if(!el){ toast("내보낼 나무가 없습니다"); return; }
+  document.body.classList.add("exporting");
+  let canvas;
+  try{ canvas = await html2canvas(el, {scale:2, backgroundColor:"#ffffff", useCORS:true}); }
+  finally{ document.body.classList.remove("exporting"); }
+  const a = document.createElement("a");
+  a.href = canvas.toDataURL("image/png");
+  a.download = exportName() + ".png";
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>a.remove(), 500);
+  toast("PNG 이미지로 저장했습니다");
+}
+async function exportPDF(){
+  await loadScript("https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js");
+  await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js");
+  const el = document.querySelector(".tree-board");
+  if(!el){ toast("내보낼 나무가 없습니다"); return; }
+  document.body.classList.add("exporting");
+  let canvas;
+  try{ canvas = await html2canvas(el, {scale:2, backgroundColor:"#ffffff", useCORS:true}); }
+  finally{ document.body.classList.remove("exporting"); }
+  const pdf = new jspdf.jsPDF("p","mm","a4");
+  const margin = 10, iw = 210 - margin*2, ihPage = 297 - margin*2;
+  const pxPerMm = canvas.width / iw;
+  const pageHpx = Math.floor(ihPage * pxPerMm);
+  let y = 0, first = true;
+  while(y < canvas.height){
+    const h = Math.min(pageHpx, canvas.height - y);
+    const slice = document.createElement("canvas");
+    slice.width = canvas.width; slice.height = h;
+    slice.getContext("2d").drawImage(canvas, 0, y, canvas.width, h, 0, 0, canvas.width, h);
+    if(!first) pdf.addPage();
+    pdf.addImage(slice.toDataURL("image/jpeg",0.92), "JPEG", margin, margin, iw, h/pxPerMm);
+    first = false; y += pageHpx;
+  }
+  pdf.save(exportName() + ".pdf");
+  toast("PDF로 저장했습니다");
+}
+
+/* ================= header events ================= */
+document.getElementById("btnAI").onclick = ()=>openAISettings(()=>toast("AI가 연결되었습니다 — 각 단계의 ✦ 버튼을 사용해 보세요"));
+document.getElementById("btnPng").onclick = ()=>withTreeView(()=>exportPNG().catch(e=>toast(e.message||"PNG 저장에 실패했습니다")));
+document.getElementById("btnPdf").onclick = ()=>withTreeView(()=>exportPDF().catch(e=>toast(e.message||"PDF 저장에 실패했습니다")));
+document.getElementById("tabWizard").onclick = ()=>{ commitStepInputs(); view="wizard"; render(); };
+document.getElementById("tabTree").onclick = ()=>{ commitStepInputs(); view="tree"; render(); };
+document.getElementById("btnSave").onclick = ()=>{ commitStepInputs(); saveFile(); };
+document.getElementById("btnLoad").onclick = ()=>document.getElementById("fileInput").click();
+document.getElementById("fileInput").onchange = e=>{ if(e.target.files[0]) loadFile(e.target.files[0]); e.target.value=""; };
+document.getElementById("btnPrint").onclick = ()=>{
+  commitStepInputs();
+  const prev = view;
+  view = "tree"; render();
+  setTimeout(()=>{ window.print(); view = prev; render(); }, 60);
+};
+document.getElementById("btnNew").onclick = ()=>{
+  commitStepInputs();
+  if((state.target.trim()||state.items.length) && !confirm("현재 작업 내용이 사라집니다. 저장하지 않았다면 먼저 ‘저장’을 눌러 주세요.\n새로 시작할까요?")) return;
+  state = blankState(); step = 1; view = "wizard"; checkboxes = {};
+  render();
+};
+document.getElementById("btnExample").onclick = ()=>{
+  commitStepInputs();
+  if((state.target.trim()||state.items.length) && !confirm("현재 작업 내용을 예시로 덮어씁니다. 계속할까요?")) return;
+  loadExample();
+};
+window.addEventListener("beforeunload", e=>{
+  if(state.target.trim()||state.items.length){ e.preventDefault(); e.returnValue=""; }
+});
+
+render();
+</script>
+</body>
+</html>
